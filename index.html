@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Basecamp Calculator & Treasure Hunt Clues</title>
   <style>
     body {
@@ -158,7 +158,6 @@ const treasureHuntData = [
   { clue: "A great place to find a Ferris Wheel, or an Arcade. Omg Donuts and Slush!", skill: "Fishing", task: "Beach Pier" },
   { clue: "A hidden paradise among trees, where the waters reflect the canopy above.", skill: "Fishing", task: "The Grove" },
   { clue: "A peaceful place filled with birds chirping, the beating heart of the earth", skill: "Fishing", task: "Woodland Lake" },
-  { clue: "A peaceful place filled with birds chirping, the beating heart of the earth", skill: "Fishing", task: "Woodland Lake" },
   { clue: "As strong as they come, very reliable", skill: "Forestry", task: "Oak Tree" },
   { clue: "Can't beat a good old Bacon Butty!", skill: "Combat", task: "Pig" },
   { clue: "Can't touch this", skill: "Alchemy", task: "Invincibility Potion" },
@@ -215,50 +214,51 @@ const treasureHuntData = [
   { clue: "Yeah no thanks, I don't like the dark.", skill: "Fishing", task: "Cave" },
   { clue: "You may need to wrap up warm for this one", skill: "Discovery", task: "Frozen Wasteland" }
 ];
+
 // =================== ALCHEMY POTIONS DATA ===================
 const alchemyPotions = [
-    // Format: { name, level, exp, materials: [], amounts: [] }
-    { name: "Attack Potion", level: 1, exp: 18, materials: ["Empty Vial","Akomeric","Birds Nest"], amounts: [1,1,1] },
-    { name: "Defence Potion", level: 5, exp: 30, materials: ["Empty Vial","Akomeric","Bones"], amounts: [1,1,5] },
-    { name: "Strength Potion", level: 10, exp: 45, materials: ["Empty Vial","Akomeric","Mushroom"], amounts: [1,1,5] },
-    { name: "Fishing Potion", level: 18, exp: 90, materials: ["Empty Vial","Bloodroot","Fish Hook"], amounts: [1,1,1] },
-    { name: "Health Potion", level: 32, exp: 130, materials: ["Empty Vial","Bloodroot","Gold Feather"], amounts: [1,1,5] },
-    { name: "Energy Potion", level: 38, exp: 160, materials: ["Empty Vial","Bloodroot","Orange"], amounts: [1,1,5] },
-    { name: "Super Attack Potion", level: 40, exp: 200, materials: ["Hyssop","Attack Potion","Pearl"], amounts: [1,1,5] },
-    { name: "Super Fishing Potion", level: 45, exp: 240, materials: ["Hyssop","Fishing Potion","Jawbone"], amounts: [1,1,5] },
-    { name: "Super Defence Potion", level: 48, exp: 300, materials: ["Safflower","Defence Potion","Blue Feather"], amounts: [1,1,10] },
-    { name: "Power Potion", level: 52, exp: 325, materials: ["Attack Potion","Strength Potion","Defence Potion"], amounts: [1,1,10] },
-    { name: "Super Energy Potion", level: 57, exp: 350, materials: ["Safflower","Energy Potion","Compass","Lemon"], amounts: [1,1,1,10] },
-    { name: "Super Strength Potion", level: 62, exp: 380, materials: ["Safflower","Strength Potion","Mushroom"], amounts: [1,1,5] },
-    { name: "Super Health Potion", level: 65, exp: 400, materials: ["Sage Leaf","Health Potion","Ram Skull"], amounts: [1,1,1] },
-    { name: "Luck Potion", level: 70, exp: 450, materials: ["Empty Vial","Sage Leaf","Emerald"], amounts: [1,1,1] },
-    { name: "Extreme Energy Potion", level: 73, exp: 500, materials: ["Sage Leaf","Super Energy Potion","Treasure Map","Eggplant"], amounts: [1,1,1,10] },
-    { name: "Super Power Potion", level: 76, exp: 540, materials: ["Super Attack Potion","Super Strength Potion","Super Defence Potion","Wolfmint"], amounts: [1,1,1,1] },
-    { name: "Extreme Attack Potion", level: 78, exp: 625, materials: ["Wolfmint","Super Attack Potion","Marlin"], amounts: [1,1,5] },
-    { name: "Poison Potion", level: 80, exp: 660, materials: ["Empty Vial","Wolfmint","Dragon Ore"], amounts: [1,1,2] },
-    { name: "Extreme Defence Potion", level: 82, exp: 700, materials: ["Wolfmint","Super Defence Potion","Ray"], amounts: [1,1,5] },
-    { name: "Mining Potion", level: 85, exp: 850, materials: ["Empty Vial","Wolfmint","Ruby"], amounts: [1,1,4] },
-    { name: "Extreme Strength Potion", level: 90, exp: 1000, materials: ["Wolfmint","Super Strength Potion","Shark"], amounts: [1,1,5] },
-    { name: "Extreme Health Potion", level: 94, exp: 1600, materials: ["Vissinel","Super Health Potion","Octopus"], amounts: [1,1,10] },
-    { name: "Thieving Potion", level: 96, exp: 1800, materials: ["Empty Vial","Vissinel","Blue Silk"], amounts: [1,1,2] },
-    { name: "Extreme Power Potion", level: 99, exp: 2000, materials: ["Extreme Attack Potion","Extreme Strength Potion","Extreme Defence Potion","Sunburst Flower"], amounts: [1,1,1,1] },
-    { name: "Insta Kill Potion", level: 101, exp: 2500, materials: ["Empty Vial","Sunburst Flower","Blueprints","Coins"], amounts: [1,1,1,10000] },
-    { name: "Lightning Potion", level: 103, exp: 2700, materials: ["Empty Vial","Sunburst Flower","Golden Scarab"], amounts: [1,1,2] },
-    { name: "Extreme Luck Potion", level: 106, exp: 3000, materials: ["Sunburst Flower","Luck Potion"], amounts: [3,3] },
-    { name: "Rock Skin Potion", level: 109, exp: 3500, materials: ["Empty Vial","Sunburst Flower","Dragon Ore","Dragon Leather","Coins"], amounts: [1,1,5,5,5000] },
-    { name: "Liquid Death Potion", level: 114, exp: 4500, materials: ["Sunburst Flower","Insta Kill Potion","Stone Tablet","Coins"], amounts: [2,2,2,30000] },
-    { name: "Thunderstorm Potion", level: 121, exp: 5500, materials: ["Empty Vial","Ember Fern","Tooth Necklace"], amounts: [1,1,1] },
-    { name: "Cyclone Potion", level: 123, exp: 6500, materials: ["Empty Vial","Ember Fern","Dragon Scimitar"], amounts: [1,1,1] },
-    { name: "Elven Grace Potion", level: 124, exp: 7000, materials: ["Elven Crystal","Stone Tablet","Ember Fern","Coins"], amounts: [1,5,3,50000] },
-    { name: "Ultimate Power Potion", level: 126, exp: 7500, materials: ["Ember Fern","Extreme Power Potion","Dragon Skull"], amounts: [1,1,1] },
-    { name: "Summer Cocktail", level: 127, exp: 7500, materials: ["Liquid Death Potion","Wine","Orange","Lemon","Gold Coin"], amounts: [1,5,3,50000] },
-    { name: "Golden Touch Potion", level: 128, exp: 8000, materials: ["Empty Vial","Pirates Hat","Treasure Map","Ember Fern","Coins"], amounts: [1,1,1,1,25000] },
-    { name: "Avalanche Potion", level: 129, exp: 9000, materials: ["Elven Crystal","Book of Aroon","Ember Fern","Coins"], amounts: [1,1,3,75000] },
-    { name: "Invincibility Potion", level: 130, exp: 10000, materials: ["Rock Skin Potion","Ember Fern","Stone Tablet"], amounts: [1,2,5] },
-    { name: "Divine Protection Potion", level: 130, exp: 50000, materials: ["Gold Coin","Elven Armour Fragment","Kings Armour Fragment","Ember Fern"], amounts: [1500,1,1,5] },
-    { name: "Soul Reaper Potion", level: 130, exp: 100000, materials: ["Liquid Death Potion","Gold Coin","Dark Thread","Stone Tablet"], amounts: [25,7500,50,50] }
+  { name: "Attack Potion", level: 1, exp: 18, materials: ["Empty Vial","Akomeric","Birds Nest"], amounts: [1,1,1] },
+  { name: "Defence Potion", level: 5, exp: 30, materials: ["Empty Vial","Akomeric","Bones"], amounts: [1,1,5] },
+  { name: "Strength Potion", level: 10, exp: 45, materials: ["Empty Vial","Akomeric","Mushroom"], amounts: [1,1,5] },
+  { name: "Fishing Potion", level: 18, exp: 90, materials: ["Empty Vial","Bloodroot","Fish Hook"], amounts: [1,1,1] },
+  { name: "Health Potion", level: 32, exp: 130, materials: ["Empty Vial","Bloodroot","Gold Feather"], amounts: [1,1,5] },
+  { name: "Energy Potion", level: 38, exp: 160, materials: ["Empty Vial","Bloodroot","Orange"], amounts: [1,1,5] },
+  { name: "Super Attack Potion", level: 40, exp: 200, materials: ["Hyssop","Attack Potion","Pearl"], amounts: [1,1,5] },
+  { name: "Super Fishing Potion", level: 45, exp: 240, materials: ["Hyssop","Fishing Potion","Jawbone"], amounts: [1,1,5] },
+  { name: "Super Defence Potion", level: 48, exp: 300, materials: ["Safflower","Defence Potion","Blue Feather"], amounts: [1,1,10] },
+  { name: "Power Potion", level: 52, exp: 325, materials: ["Attack Potion","Strength Potion","Defence Potion"], amounts: [1,1,10] },
+  { name: "Super Energy Potion", level: 57, exp: 350, materials: ["Safflower","Energy Potion","Compass","Lemon"], amounts: [1,1,1,10] },
+  { name: "Super Strength Potion", level: 62, exp: 380, materials: ["Safflower","Strength Potion","Mushroom"], amounts: [1,1,5] },
+  { name: "Super Health Potion", level: 65, exp: 400, materials: ["Sage Leaf","Health Potion","Ram Skull"], amounts: [1,1,1] },
+  { name: "Luck Potion", level: 70, exp: 450, materials: ["Empty Vial","Sage Leaf","Emerald"], amounts: [1,1,1] },
+  { name: "Extreme Energy Potion", level: 73, exp: 500, materials: ["Sage Leaf","Super Energy Potion","Treasure Map","Eggplant"], amounts: [1,1,1,10] },
+  { name: "Super Power Potion", level: 76, exp: 540, materials: ["Super Attack Potion","Super Strength Potion","Super Defence Potion","Wolfmint"], amounts: [1,1,1,1] },
+  { name: "Extreme Attack Potion", level: 78, exp: 625, materials: ["Wolfmint","Super Attack Potion","Marlin"], amounts: [1,1,5] },
+  { name: "Poison Potion", level: 80, exp: 660, materials: ["Empty Vial","Wolfmint","Dragon Ore"], amounts: [1,1,2] },
+  { name: "Extreme Defence Potion", level: 82, exp: 700, materials: ["Wolfmint","Super Defence Potion","Ray"], amounts: [1,1,5] },
+  { name: "Mining Potion", level: 85, exp: 850, materials: ["Empty Vial","Wolfmint","Ruby"], amounts: [1,1,4] },
+  { name: "Extreme Strength Potion", level: 90, exp: 1000, materials: ["Wolfmint","Super Strength Potion","Shark"], amounts: [1,1,5] },
+  { name: "Extreme Health Potion", level: 94, exp: 1600, materials: ["Vissinel","Super Health Potion","Octopus"], amounts: [1,1,10] },
+  { name: "Thieving Potion", level: 96, exp: 1800, materials: ["Empty Vial","Vissinel","Blue Silk"], amounts: [1,1,2] },
+  { name: "Extreme Power Potion", level: 99, exp: 2000, materials: ["Extreme Attack Potion","Extreme Strength Potion","Extreme Defence Potion","Sunburst Flower"], amounts: [1,1,1,1] },
+  { name: "Insta Kill Potion", level: 101, exp: 2500, materials: ["Empty Vial","Sunburst Flower","Blueprints","Coins"], amounts: [1,1,1,10000] },
+  { name: "Lightning Potion", level: 103, exp: 2700, materials: ["Empty Vial","Sunburst Flower","Golden Scarab"], amounts: [1,1,2] },
+  { name: "Extreme Luck Potion", level: 106, exp: 3000, materials: ["Sunburst Flower","Luck Potion"], amounts: [3,3] },
+  { name: "Rock Skin Potion", level: 109, exp: 3500, materials: ["Empty Vial","Sunburst Flower","Dragon Ore","Dragon Leather","Coins"], amounts: [1,1,5,5,5000] },
+  { name: "Liquid Death Potion", level: 114, exp: 4500, materials: ["Sunburst Flower","Insta Kill Potion","Stone Tablet","Coins"], amounts: [2,2,2,30000] },
+  { name: "Thunderstorm Potion", level: 121, exp: 5500, materials: ["Empty Vial","Ember Fern","Tooth Necklace"], amounts: [1,1,1] },
+  { name: "Cyclone Potion", level: 123, exp: 6500, materials: ["Empty Vial","Ember Fern","Dragon Scimitar"], amounts: [1,1,1] },
+  { name: "Elven Grace Potion", level: 124, exp: 7000, materials: ["Elven Crystal","Stone Tablet","Ember Fern","Coins"], amounts: [1,5,3,50000] },
+  { name: "Ultimate Power Potion", level: 126, exp: 7500, materials: ["Ember Fern","Extreme Power Potion","Dragon Skull"], amounts: [1,1,1] },
+  { name: "Summer Cocktail", level: 127, exp: 7500, materials: ["Liquid Death Potion","Wine","Orange","Lemon","Gold Coin"], amounts: [1,5,3,50000] },
+  { name: "Golden Touch Potion", level: 128, exp: 8000, materials: ["Empty Vial","Pirates Hat","Treasure Map","Ember Fern","Coins"], amounts: [1,1,1,1,25000] },
+  { name: "Avalanche Potion", level: 129, exp: 9000, materials: ["Elven Crystal","Book of Aroon","Ember Fern","Coins"], amounts: [1,1,3,75000] },
+  { name: "Invincibility Potion", level: 130, exp: 10000, materials: ["Rock Skin Potion","Ember Fern","Stone Tablet"], amounts: [1,2,5] },
+  { name: "Divine Protection Potion", level: 130, exp: 50000, materials: ["Gold Coin","Elven Armour Fragment","Kings Armour Fragment","Ember Fern"], amounts: [1500,1,1,5] },
+  { name: "Soul Reaper Potion", level: 130, exp: 100000, materials: ["Liquid Death Potion","Gold Coin","Dark Thread","Stone Tablet"], amounts: [25,7500,50,50] }
 ];
-// =================== ALCHEMY XP CALCULATOR ===================
+
+// =================== ALCHEMY XP CALCULATOR (renderer) ===================
 function renderAlchemyXP(container) {
   container.innerHTML = `
     <div>
@@ -273,23 +273,24 @@ function renderAlchemyXP(container) {
     <div id="alchemyResults"></div>
   `;
 
-  document.getElementById('alchemyCalcBtn').addEventListener('click', () => {
-    const idx = parseInt(document.getElementById('alchemyPotionSelect').value,10);
-    const qty = parseInt(document.getElementById('alchemyQuantity').value,10);
-    if (isNaN(qty) || qty<1) return alert("Enter a valid quantity.");
+  container.querySelector('#alchemyCalcBtn').addEventListener('click', () => {
+    const idx = parseInt(container.querySelector('#alchemyPotionSelect').value,10);
+    const qty = parseInt(container.querySelector('#alchemyQuantity').value,10);
+    if (isNaN(qty) || qty < 1) {
+      return alert("Enter a valid quantity.");
+    }
     const potion = alchemyPotions[idx];
-    
+
     let html = `<h2>${potion.name} x${qty}</h2>`;
     html += `<p><strong>Total XP:</strong> ${(potion.exp * qty).toLocaleString()}</p>`;
     html += `<h3>Required Materials:</h3><ul>`;
-    for(let i=0;i<potion.materials.length;i++){
-      html += `<li>${potion.materials[i]}: ${(potion.amounts[i]*qty).toLocaleString()}</li>`;
+    for (let i = 0; i < potion.materials.length; i++) {
+      html += `<li>${potion.materials[i]}: ${(potion.amounts[i] * qty).toLocaleString()}</li>`;
     }
     html += "</ul>";
-    document.getElementById('alchemyResults').innerHTML = html;
+    container.querySelector('#alchemyResults').innerHTML = html;
   });
 }
-
 
 // =================== UTILITY FUNCTIONS ===================
 function calculateTotals(data, start, end) {
@@ -323,9 +324,13 @@ const menus = {
         </div>
         <div id="menuResults"></div>
       `;
+      // default selections
+      container.querySelector('#basecampStart').value = '1';
+      container.querySelector('#basecampEnd').value = '75';
+
       container.querySelector('#calcBtn').addEventListener('click', () => {
-        const start = parseInt(document.getElementById('basecampStart').value, 10);
-        const end   = parseInt(document.getElementById('basecampEnd').value, 10);
+        const start = parseInt(container.querySelector('#basecampStart').value, 10);
+        const end   = parseInt(container.querySelector('#basecampEnd').value, 10);
         if (isNaN(start) || isNaN(end) || start > end) {
           alert("Please choose valid start and goal levels (start ≤ goal).");
           return;
@@ -344,6 +349,7 @@ const menus = {
       });
     }
   },
+
   treasureHunt: {
     name: "Treasure Hunt Clues",
     render: function(container) {
@@ -379,25 +385,30 @@ const menus = {
       renderResults();
     }
   },
-  menus.alchemyXP = { name: "Alchemy XP Calculator", render: renderAlchemyXP };
-const newOpt = document.createElement('option');
-newOpt.value = 'alchemyXP';
-newOpt.textContent = "Alchemy XP Calculator";
-menuSelect.appendChild(newOpt);
 
+  alchemyXP: {
+    name: "Alchemy XP Calculator",
+    render: renderAlchemyXP
+  }
 };
 
 // =================== INITIALIZATION ===================
 const menuSelect = document.getElementById('menuSelect');
 const menuContainer = document.getElementById('menuContainer');
+
+// populate menu select
 for (const key in menus) {
   const opt = document.createElement('option');
   opt.value = key;
   opt.textContent = menus[key].name;
   menuSelect.appendChild(opt);
 }
-// Render the first menu by default
-menus[menuSelect.value].render(menuContainer);
+
+// Render the first available menu by default
+if (menuSelect.options.length > 0) {
+  menuSelect.selectedIndex = 0;
+  menus[menuSelect.value].render(menuContainer);
+}
 
 menuSelect.addEventListener('change', () => {
   menus[menuSelect.value].render(menuContainer);
