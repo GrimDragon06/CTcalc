@@ -5,14 +5,59 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Basecamp Calculator</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    select, button { margin: 5px; }
-    h1 { font-size: 24px; }
-    h2 { margin-top: 24px; }
-    ul { list-style: none; padding-left: 0; }
-    li { margin-bottom: 4px; }
-    .menu-container { margin-top: 20px; border: 1px solid #ccc; padding: 10px; }
-    .menu-container select, .menu-container button { margin-right: 6px; }
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #121212;
+      color: #f0f0f0;
+    }
+    select, button {
+      margin: 5px;
+      font-size: 16px;
+      padding: 5px 8px;
+      background-color: #1f1f1f;
+      color: #f0f0f0;
+      border: 1px solid #333;
+      border-radius: 4px;
+    }
+    button:hover, select:hover {
+      border-color: #555;
+    }
+    h1 {
+      font-size: 28px;
+    }
+    h2 {
+      margin-top: 24px;
+      font-size: 22px;
+    }
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    li {
+      margin-bottom: 6px;
+    }
+    .menu-container {
+      margin-top: 20px;
+      border: 1px solid #333;
+      padding: 12px;
+      background-color: #1b1b1b;
+      border-radius: 6px;
+    }
+    .menu-container select, .menu-container button {
+      margin-right: 6px;
+    }
+    #menuResults {
+      margin-top: 15px;
+    }
+    #menuResults ul {
+      background-color: #1f1f1f;
+      padding: 10px;
+      border-radius: 6px;
+    }
+    #menuResults li {
+      padding: 3px 0;
+    }
   </style>
 </head>
 <body>
@@ -25,8 +70,7 @@
   <div id="menuContainer" class="menu-container"></div>
 
 <script>
-// =================== FULL DATASET ===================
-
+// =================== FULL DATASET (Levels 1–75) ===================
 const basecampData = {
   1:  { required: { "Coins":10000,     "Wood":200,   "Thread":500 },         rewards: { "Small Exp Scroll":1 } },
   2:  { required: { "Coins":20000,     "Hide":500,   "Iron":250 },           rewards: { "Small Exp Scroll":1 } },
@@ -87,22 +131,22 @@ const basecampData = {
  57:  { required: { "Coins":1700000000,"Drakes Diary":15,     "Elven Grace Potion":15000 },   rewards: { "Massive Exp Scroll":1 } },
  58:  { required: { "Coins":1800000000,"Ring Fragments":1000, "Barbarian Top":50 },           rewards: { "Casket of Treasure":100 } },
  59:  { required: { "Coins":1900000000,"Challenger Hat":2,   "Burnt Lobster":10000 },        rewards: { "Elven Weapon Fragment":100 } },
- 60:  { required: { "Coins":2000000000,"Gold Coin":100000,   "Eternal Ring":5 },              rewards: { "Challenge Coin":20 } },
- 61:  { required: { "Coins":2000000000,"Large Exp Scroll":250, "Necklace of Health":10 },     rewards: { "Enhancement Ticket":5 } },
- 62:  { required: { "Coins":2000000000,"Challenger Legs":2,   "Challenger Top":2 },           rewards: { "Soul Gem":50 } },
- 63:  { required: { "Coins":2000000000,"Ring Fragments":2000, "Ring of Renewal":25 },         rewards: { "Elven Weapon Fragment":100 } },
- 64:  { required: { "Coins":2000000000,"Primal Gloves":2,     "Primal Boots":2 },             rewards: { "Massive Exp Scroll":1 } },
- 65:  { required: { "Coins":2000000000,"Gold Coin":500000,    "Chefs Hat":5 },                rewards: { "Casket of Treasure":250 } },
- 66:  { required: { "Coins":2000000000,"Primal Legs":2,       "Primal Top":2 },               rewards: { "Elven Armour Fragment":500 } },
- 67:  { required: { "Coins":2000000000,"Ring of Life":20,     "Ring of Death":20 },           rewards: { "Elven Weapon Fragment":100 } },
- 68:  { required: { "Coins":2000000000,"Ring Fragments":2500, "Wooden Stick":5 },             rewards: { "Soul Gem":50 } },
+ 60:  { required: { "Coins":2000000000,"Gold Coin":100000,   "Eternal Ring":5 },              rewards: { "Challenge Coin":20 } } ,
+ 61:  { required: { "Coins":2000000000,"Large Exp Scroll":250,"Necklace of Health":10 },     rewards: { "Enhancement Ticket":5 } },
+ 62:  { required: { "Coins":2000000000,"Challenger Legs":2,  "Challenger Top":2 },            rewards: { "Soul Gem":50 } },
+ 63:  { required: { "Coins":2000000000,"Ring Fragments":2000,"Ring of Renewal":25 },         rewards: { "Elven Weapon Fragment":100 } },
+ 64:  { required: { "Coins":2000000000,"Primal Gloves":2,    "Primal Boots":2 },              rewards: { "Massive Exp Scroll":1 } },
+ 65:  { required: { "Coins":2000000000,"Gold Coin":500000,   "Chefs Hat":5 },                 rewards: { "Casket of Treasure":250 } },
+ 66:  { required: { "Coins":2000000000,"Primal Legs":2,      "Primal Top":2 },                rewards: { "Elven Armour Fragment":500 } },
+ 67:  { required: { "Coins":2000000000,"Ring of Life":20,    "Ring of Death":20 },            rewards: { "Elven Weapon Fragment":100 } },
+ 68:  { required: { "Coins":2000000000,"Ring Fragments":2500,"Wooden Stick":5 },             rewards: { "Soul Gem":50 } },
  69:  { required: { "Coins":2000000000,"Blessed Eternal Sacrifice":5, "Goblin Cleaver":50 }, rewards: { "Massive Exp Scroll":5 } },
- 70:  { required: { "Coins":2000000000,"Gold Coin":1000000,   "Cognium Ring":2 },              rewards: { "Casket of Treasure":250 } },
+ 70:  { required: { "Coins":2000000000,"Gold Coin":1000000,  "Cognium Ring":2 },              rewards: { "Casket of Treasure":250 } },
  71:  { required: { "Coins":2000000000,"Necklace of Amaran":1, "Mystic Staff (E)":1 },        rewards: { "Elven Weapon Fragment":500 } },
- 72:  { required: { "Coins":2000000000,"Hatchet of the Gods":10, "Rabbits Foot":25 },         rewards: { "Soul Gem":100 } },
+ 72:  { required: { "Coins":2000000000,"Hatchet of the Gods":10,"Rabbits Foot":25 },          rewards: { "Soul Gem":100 } },
  73:  { required: { "Coins":2000000000,"Burnt Shrimp":25000,  "Burnt Snail":25000 },          rewards: { "Massive Exp Scroll":5 } },
- 74:  { required: { "Coins":2000000000,"Ring Fragments":5000,  "Ring of Souls (E)":1 },        rewards: { "Casket of Treasure":1000 } },
- 75:  { required: { "Coins":2000000000,"Gold Coin":5000000,   "Eternal Berserker Ring":10 },   rewards: { "Casket of Treasure":5000 } }
+ 74:  { required: { "Coins":2000000000,"Ring Fragments":5000,"Ring of Souls (E)":1 },         rewards: { "Casket of Treasure":1000 } },
+ 75:  { required: { "Coins":2000000000,"Gold Coin":5000000,  "Eternal Berserker Ring":10 },   rewards: { "Casket of Treasure":5000 } }
 };
 
 // =================== MENU DEFINITIONS ===================
@@ -143,8 +187,6 @@ const menus = {
       });
     }
   }
-  // You can add new menus here — just follow the same pattern:
-  // key: { name: "Menu Name", render: function(container) { ... } }
 };
 
 // =================== UTILITY FUNCTIONS ===================
