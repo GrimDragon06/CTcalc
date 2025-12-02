@@ -2,312 +2,184 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Slayer KC & Casket Calculator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Basecamp Calculator</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #2e2e2e;
-      color: #fff;
-      padding: 30px;
-      max-width: 800px;
-      margin: auto;
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    label {
-      margin-top: 20px;
-      display: block;
-      font-weight: 500;
-    }
-    select, input {
-      width: 100%;
-      padding: 10px;
-      margin-top: 8px;
-      margin-bottom: 10px;
-      border-radius: 6px;
-      border: 1px solid #555;
-      background-color: #3c3c3c;
-      color: #fff;
-      font-size: 14px;
-    }
-    button {
-      margin-top: 25px;
-      padding: 12px;
-      width: 100%;
-      background-color: #5c5c5c;
-      border: none;
-      border-radius: 6px;
-      font-weight: bold;
-      color: #fff;
-      font-size: 16px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-    button:hover {
-      background-color: #777;
-    }
-    .output {
-      margin-top: 30px;
-      background-color: #1f1f1f;
-      padding: 20px;
-      border-radius: 8px;
-      border: 1px solid #444;
-      white-space: pre-wrap;
-      font-size: 14px;
-    }
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    select, button { margin: 5px; }
+    h1 { font-size: 24px; }
+    h2 { margin-top: 24px; }
+    ul { list-style: none; padding-left: 0; }
+    li { margin-bottom: 4px; }
+    .menu-container { margin-top: 20px; border: 1px solid #ccc; padding: 10px; }
+    .menu-container select, .menu-container button { margin-right: 6px; }
   </style>
 </head>
 <body>
-  <h2>Slayer KC & Casket Calculator</h2>
 
-  <label>Weapon:
-    <select id="weapon">
-      <option value="1">Kynosian Bow (1s)</option>
-      <option value="0.8">Kynosian Bow (E3) (0.8s)</option>
-    </select>
-  </label>
+  <h1>Interactive Game Calculators</h1>
 
-  <label>Cape:
-    <select id="cape">
-      <option value="none">None</option>
-      <option value="cognium">Cognium Wing</option>
-      <option value="slayer">Slayer Cape</option>
-    </select>
-  </label>
+  <label for="menuSelect">Select Calculator:</label>
+  <select id="menuSelect"></select>
 
-  <label>Ring:
-    <select id="ring">
-      <option value="none">None</option>
-      <option value="cognium">Cognium Ring</option>
-      <option value="speed">Ring of Speed</option>
-      <option value="berserker">Eternal Berserker Ring</option>
-      <option value="soul">Ring of Soul</option>
-      <option value="secret">Ring of Secret</option>
-    </select>
-  </label>
+  <div id="menuContainer" class="menu-container"></div>
 
-  <label>Blessing:
-    <select id="blessing">
-      <option value="0">None</option>
-      <option value="80">Death Princess Rune (80%)</option>
-      <option value="85">Death Princess Rune (E) (85%)</option>
-    </select>
-  </label>
+<script>
+// =================== FULL DATASET ===================
 
-  <label>Basecamp Level:
-    <select id="basecamp">
-      <option value="59">Basecamp 1 - 59</option>
-      <option value="60">Basecamp 60 - 65</option>
-      <option value="66">Basecamp 66 - 68</option>
-      <option value="69">Basecamp 69 - 75</option>
-    </select>
-  </label>
+const basecampData = {
+  1:  { required: { "Coins":10000,     "Wood":200,   "Thread":500 },         rewards: { "Small Exp Scroll":1 } },
+  2:  { required: { "Coins":20000,     "Hide":500,   "Iron":250 },           rewards: { "Small Exp Scroll":1 } },
+  3:  { required: { "Coins":30000,     "Yarn":250,   "Barrel":200 },         rewards: { "Small Exp Scroll":1 } },
+  4:  { required: { "Coins":40000,     "Attack Potion":200, "Waterskin":100 }, rewards: { "Small Exp Scroll":1 } },
+  5:  { required: { "Coins":50000,     "Gold Coin":15,     "Thread":1000 },     rewards: { "Small Exp Scroll":1 } },
+  6:  { required: { "Coins":60000,     "Strength Potion":250, "Coin Purse":100 }, rewards: { "Small Exp Scroll":2 } },
+  7:  { required: { "Coins":70000,     "Perch":250,       "Raw Perch":250 },       rewards: { "Small Exp Scroll":2 } },
+  8:  { required: { "Coins":80000,     "Red Onion":100,   "Strawberry":100 },      rewards: { "Small Exp Scroll":2 } },
+  9:  { required: { "Coins":90000,     "Steel Bar":200,   "Wood":300 },             rewards: { "Small Exp Scroll":2 } },
+ 10:  { required: { "Coins":100000,    "Gold Coin":30,    "Energy Potion":300 },    rewards: { "Small Exp Scroll":2 } },
+ 11:  { required: { "Coins":200000,    "Super Defence Potion":200, "Hammer":100 },   rewards: { "Medium Exp Scroll":1 } },
+ 12:  { required: { "Coins":300000,    "Crab":500,        "Raw Crab":500 },         rewards: { "Medium Exp Scroll":1 } },
+ 13:  { required: { "Coins":400000,    "Lemon":250,       "Red Onion":250 },        rewards: { "Medium Exp Scroll":1 } },
+ 14:  { required: { "Coins":500000,    "Clownfish":500,   "Raw Clownfish":500 },     rewards: { "Medium Exp Scroll":1 } },
+ 15:  { required: { "Coins":1000000,   "Gold Coin":45,    "Yarn":2000 },             rewards: { "Medium Exp Scroll":1 } },
+ 16:  { required: { "Coins":1500000,   "Super Defence Potion":500, "Raft":200 },     rewards: { "Medium Exp Scroll":2 } },
+ 17:  { required: { "Coins":2000000,   "Diary":100,       "Notebook":100 },         rewards: { "Medium Exp Scroll":2 } },
+ 18:  { required: { "Coins":2500000,   "Anchor":100,      "Fish Hook":200 },         rewards: { "Medium Exp Scroll":2 } },
+ 19:  { required: { "Coins":3000000,   "Jellyfish":200,   "Super Health Potion":200 }, rewards: { "Medium Exp Scroll":2 } },
+ 20:  { required: { "Coins":5000000,   "Gold Coin":60,    "Mithril Bar":500 },       rewards: { "Medium Exp Scroll":2 } },
+ 21:  { required: { "Coins":6000000,   "Super Strength Potion":500, "Super Defence Potion":500 }, rewards: { "Large Exp Scroll":1 } },
+ 22:  { required: { "Coins":7000000,   "Pufferfish":500,  "Raw Pufferfish":500 },    rewards: { "Large Exp Scroll":1 } },
+ 23:  { required: { "Coins":8000000,   "Extreme Energy Potion":300, "Crate":250 },        rewards: { "Large Exp Scroll":1 } },
+ 24:  { required: { "Coins":9000000,   "Workbench":250,   "Rope":1000 },            rewards: { "Large Exp Scroll":1 } },
+ 25:  { required: { "Coins":10000000,  "Gold Coin":75,    "Dragon Leather":500 },     rewards: { "Large Exp Scroll":1 } },
+ 26:  { required: { "Coins":15000000,  "Extreme Attack Potion":750, "Extreme Defence Potion":750 }, rewards: { "Large Exp Scroll":2 } },
+ 27:  { required: { "Coins":20000000,  "Extreme Defence Potion":750, "Mithril Top":200 },   rewards: { "Large Exp Scroll":2 } },
+ 28:  { required: { "Coins":25000000,  "Extreme Strength Potion":500, "Mithril Axe":250 },   rewards: { "Large Exp Scroll":3 } },
+ 29:  { required: { "Coins":30000000,  "Bestiary":500,    "Extreme Health Potion":500 },  rewards: { "Large Exp Scroll":4 } },
+ 30:  { required: { "Coins":100000000, "Gold Coin":100,   "Extreme Strength Potion":500 },  rewards: { "Large Exp Scroll":5 } },
+ 31:  { required: { "Coins":120000000, "Blue Shrimp":5000, "Blue Crab":5000 },            rewards: { "Large Exp Scroll":6 } },
+ 32:  { required: { "Coins":140000000, "Coin Purse":1000 },                               rewards: { "Large Exp Scroll":7 } },
+ 33:  { required: { "Coins":160000000, "Extreme Energy Potion":2000 },                   rewards: { "Large Exp Scroll":8 } },
+ 34:  { required: { "Coins":180000000, "Lightning Potion":1000, "Dragon Rider Greaves":1000 }, rewards: { "Large Exp Scroll":9 } },
+ 35:  { required: { "Coins":200000000, "Blueberry":10000, "Cedar Log":2500 },             rewards: { "Large Exp Scroll":10 } },
+ 36:  { required: { "Coins":220000000, "Super Power Stone":5,   "Elder Log":5000 },        rewards: { "Queens Armour Fragment":10 } },
+ 37:  { required: { "Coins":240000000, "Crystal Chest":2000,   "Crystal Key":2000 },       rewards: { "Queens Armour Fragment":10 } },
+ 38:  { required: { "Coins":260000000, "Blue Thread":25000,    "Redwood Log":5000 },        rewards: { "Queens Armour Fragment":10 } },
+ 39:  { required: { "Coins":280000000, "Golden Necklace":500,  "Fish Soup":2500 },          rewards: { "Queens Armour Fragment":10 } },
+ 40:  { required: { "Coins":300000000, "Gold Coin":150,       "Ember Fern":5000 },         rewards: { "Queens Armour Fragment":10 } },
+ 41:  { required: { "Coins":350000000, "Sunburst Flower":10000, "Fish Steak":2500 },        rewards: { "Queens Weapon Fragment":5 } },
+ 42:  { required: { "Coins":400000000, "Rock Skin Potion":500, "Bone Stew":3000 },          rewards: { "Queens Weapon Fragment":10 } },
+ 43:  { required: { "Coins":450000000, "Liquid Death Potion":500, "Thieving Potion":2500 }, rewards: { "Queens Weapon Fragment":15 } },
+ 44:  { required: { "Coins":500000000, "Mahogany Log":5000,   "Cherry Blossom Log":5000 },   rewards: { "Queens Weapon Fragment":20 } },
+ 45:  { required: { "Coins":550000000, "Gold Coin":200,       "Coin Purse":10000 },          rewards: { "Queens Weapon Fragment":25 } },
+ 46:  { required: { "Coins":600000000, "Mushroom Soup":5000,  "Mahogany Log":7500 },         rewards: { "Kings Weapon Fragment":2 } },
+ 47:  { required: { "Coins":650000000, "Ultimate Power Potion":2500, "Extreme Power Potion":4000 }, rewards: { "Kings Weapon Fragment":5 } },
+ 48:  { required: { "Coins":700000000, "Dragon Skull":1000,   "Dragon Tail":1000 },           rewards: { "Kings Weapon Fragment":10 } },
+ 49:  { required: { "Coins":750000000, "Coin Purse":10000,    "Crab Soup":10000 },           rewards: { "Kings Weapon Fragment":25 } },
+ 50:  { required: { "Coins":1000000000,"Invincibility Potion":2500, "Golden Touch Potion":2500 }, rewards: { "Kings Weapon Fragment":50 } },
+ 51:  { required: { "Coins":1100000000,"Gold Coin":10000,     "Ring Fragments":500 },         rewards: { "Challenge Coin":20 } },
+ 52:  { required: { "Coins":1200000000,"Necromancer Top":50,  "Necromancer Greaves":50 },     rewards: { "Enhancement Ticket":5 } },
+ 53:  { required: { "Coins":1300000000,"Mystic Robe":25,      "Mystic Bottoms":25 },          rewards: { "Soul Gem":50 } },
+ 54:  { required: { "Coins":1400000000,"Scythe of Demeter":10, "Restoration Fragment 4":10 }, rewards: { "Casket of Treasure":100 } },
+ 55:  { required: { "Coins":1500000000,"Gold Coin":25000,     "Ancient Elven Book":5 },       rewards: { "Challenge Coin":20 } },
+ 56:  { required: { "Coins":1600000000,"Challenger Boots":2,  "Challenger Gloves":2 },       rewards: { "Enhancement Ticket":5 } },
+ 57:  { required: { "Coins":1700000000,"Drakes Diary":15,     "Elven Grace Potion":15000 },   rewards: { "Massive Exp Scroll":1 } },
+ 58:  { required: { "Coins":1800000000,"Ring Fragments":1000, "Barbarian Top":50 },           rewards: { "Casket of Treasure":100 } },
+ 59:  { required: { "Coins":1900000000,"Challenger Hat":2,   "Burnt Lobster":10000 },        rewards: { "Elven Weapon Fragment":100 } },
+ 60:  { required: { "Coins":2000000000,"Gold Coin":100000,   "Eternal Ring":5 },              rewards: { "Challenge Coin":20 } },
+ 61:  { required: { "Coins":2000000000,"Large Exp Scroll":250, "Necklace of Health":10 },     rewards: { "Enhancement Ticket":5 } },
+ 62:  { required: { "Coins":2000000000,"Challenger Legs":2,   "Challenger Top":2 },           rewards: { "Soul Gem":50 } },
+ 63:  { required: { "Coins":2000000000,"Ring Fragments":2000, "Ring of Renewal":25 },         rewards: { "Elven Weapon Fragment":100 } },
+ 64:  { required: { "Coins":2000000000,"Primal Gloves":2,     "Primal Boots":2 },             rewards: { "Massive Exp Scroll":1 } },
+ 65:  { required: { "Coins":2000000000,"Gold Coin":500000,    "Chefs Hat":5 },                rewards: { "Casket of Treasure":250 } },
+ 66:  { required: { "Coins":2000000000,"Primal Legs":2,       "Primal Top":2 },               rewards: { "Elven Armour Fragment":500 } },
+ 67:  { required: { "Coins":2000000000,"Ring of Life":20,     "Ring of Death":20 },           rewards: { "Elven Weapon Fragment":100 } },
+ 68:  { required: { "Coins":2000000000,"Ring Fragments":2500, "Wooden Stick":5 },             rewards: { "Soul Gem":50 } },
+ 69:  { required: { "Coins":2000000000,"Blessed Eternal Sacrifice":5, "Goblin Cleaver":50 }, rewards: { "Massive Exp Scroll":5 } },
+ 70:  { required: { "Coins":2000000000,"Gold Coin":1000000,   "Cognium Ring":2 },              rewards: { "Casket of Treasure":250 } },
+ 71:  { required: { "Coins":2000000000,"Necklace of Amaran":1, "Mystic Staff (E)":1 },        rewards: { "Elven Weapon Fragment":500 } },
+ 72:  { required: { "Coins":2000000000,"Hatchet of the Gods":10, "Rabbits Foot":25 },         rewards: { "Soul Gem":100 } },
+ 73:  { required: { "Coins":2000000000,"Burnt Shrimp":25000,  "Burnt Snail":25000 },          rewards: { "Massive Exp Scroll":5 } },
+ 74:  { required: { "Coins":2000000000,"Ring Fragments":5000,  "Ring of Souls (E)":1 },        rewards: { "Casket of Treasure":1000 } },
+ 75:  { required: { "Coins":2000000000,"Gold Coin":5000000,   "Eternal Berserker Ring":10 },   rewards: { "Casket of Treasure":5000 } }
+};
 
-  <label>Fast Combat:
-    <select id="fastcombat">
-      <option value="true">True</option>
-      <option value="false">False</option>
-    </select>
-  </label>
+// =================== MENU DEFINITIONS ===================
 
-  <label>Wish Status:
-    <select id="wish">
-      <option value="no">No Wish</option>
-      <option value="max">Max Wish</option>
-    </select>
-  </label>
-
-  <label>Slayer Task:
-    <select id="task">
-      <option value="blade">Blade (5 mobs)</option>
-      <option value="tracer">Tracer (8 mobs)</option>
-      <option value="crux">Crux (18 mobs)</option>
-      <option value="tide">Tide (20 mobs)</option>
-      <option value="quill">Quill (32 mobs)</option>
-      <option value="lumen">Lumen (48 mobs)</option>
-      <option value="vain">Vain (72 mobs)</option>
-      <option value="feroxi">Feroxi (80 mobs)</option>
-      <option value="adamet">Adamet (96 mobs)</option>
-    </select>
-  </label>
-
-  <label>Mode:
-    <select id="mode">
-      <option value="time">Calculate KC from Time</option>
-      <option value="kc">Calculate Time from KC</option>
-      <option value="caskets">Calculate Time from Casket Goal</option>
-      <option value="optimal">Find Best Task for Input</option>
-    </select>
-  </label>
-
-  <div id="optimalInputTypeWrapper" style="display:none;">
-    <label>Optimal Goal:
-      <select id="optimalInputType">
-        <option value="kc">Target Killcoins</option>
-        <option value="caskets">Target Caskets</option>
-      </select>
-    </label>
-  </div>
-
-  <div id="kcLabel" style="display:none;">
-    <label>Killcoin Target:
-      <input type="number" id="kcInput" min="1" value="100000">
-    </label>
-  </div>
-
-  <div id="casketLabel" style="display:none;">
-    <label>Casket Target:
-      <input type="number" id="casketInput" min="1" value="5">
-      <select id="casketType">
-        <option value="slayer">Slayer Caskets</option>
-        <option value="regular">Regular Caskets</option>
-      </select>
-    </label>
-  </div>
-
-  <div id="timeInputWrapper" style="display:none;">
-    <label>Available Time (HH:MM:SS):
-      <input type="text" id="timeInput" placeholder="e.g., 2:30:00">
-    </label>
-  </div>
-
-  <label>How many hits to kill one mob?
-    <input type="number" id="hitsInput" min="1" value="1">
-  </label>
-
-  <button id="calculateBtn">Calculate</button>
-  <div class="output" id="results"></div>
-
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const taskData = {
-        blade: { mobs: 5, kc: { no: 1, max: 3.5 } },
-        tracer: { mobs: 8, kc: { no: 3, max: 10.5 } },
-        crux: { mobs: 18, kc: { no: 6, max: 21 } },
-        tide: { mobs: 20, kc: { no: 10, max: 35 } },
-        quill: { mobs: 32, kc: { no: 18, max: 63 } },
-        lumen: { mobs: 48, kc: { no: 32, max: 112 } },
-        vain: { mobs: 72, kc: { no: 54, max: 189 } },
-        feroxi: { mobs: 80, kc: { no: 75, max: 262.5 } },
-        adamet: { mobs: 96, kc: { no: 125, max: 437.5 } }
-      };
-
-      const formatTime = (seconds) => {
-        seconds = Math.ceil(seconds);
-        const h = Math.floor(seconds / 3600);
-        const m = Math.floor((seconds % 3600) / 60);
-        const s = seconds % 60;
-        return `${h}h ${m}m ${s}s`;
-      };
-
-      const updateModeInputs = () => {
-        const mode = document.getElementById("mode").value;
-        document.getElementById("kcLabel").style.display = (mode === "kc" || (mode === "optimal" && document.getElementById("optimalInputType").value === "kc")) ? "block" : "none";
-        document.getElementById("casketLabel").style.display = (mode === "caskets" || (mode === "optimal" && document.getElementById("optimalInputType").value === "caskets")) ? "block" : "none";
-        document.getElementById("optimalInputTypeWrapper").style.display = mode === "optimal" ? "block" : "none";
-        document.getElementById("timeInputWrapper").style.display = mode === "time" ? "block" : "none";
-      };
-
-      document.getElementById("mode").addEventListener("change", updateModeInputs);
-      document.getElementById("optimalInputType").addEventListener("change", updateModeInputs);
-
-      document.getElementById("calculateBtn").addEventListener("click", () => {
-        const weaponSpeed = parseFloat(document.getElementById("weapon").value);
-        const ring = document.getElementById("ring").value;
-        const cape = document.getElementById("cape").value;
-        const wish = document.getElementById("wish").value;
-        const basecamp = parseInt(document.getElementById("basecamp").value);
-        const fastcombat = document.getElementById("fastcombat").value === "true";
-        const blessing = parseInt(document.getElementById("blessing").value);
-        const hitsRaw = parseInt(document.getElementById("hitsInput").value);
-        const mode = document.getElementById("mode").value;
-        const taskKey = document.getElementById("task").value;
-
-        let attackSpeed = weaponSpeed;
-        if (["cognium", "speed", "berserker", "soul", "secret"].includes(ring)) attackSpeed *= 0.5;
-        if (basecamp >= 60) attackSpeed *= 0.8;
-
-        let respawnTime = 1.8;
-        if (fastcombat) respawnTime *= 0.5;
-        if (cape === "cognium") respawnTime *= 0.5;
-        if (["cognium", "secret"].includes(ring)) respawnTime *= 0.5;
-        if (basecamp >= 66) respawnTime *= 0.8;
-        
-        const task = taskData[taskKey];
-        let mobs = task.mobs;
-        if (basecamp >= 69) mobs = Math.ceil(mobs * 0.8);
-
-        let mobKillTime = 0;
-        let taskTime = 0;
-        if ([80, 85].includes(blessing)) {
-          mobKillTime = attackSpeed * hitsRaw + respawnTime;
-          taskTime = mobs * mobKillTime;
-          const successDPR = taskTime * blessing / 100;
-
-          mobKillTime = attackSpeed * (hitsRaw + 1) + respawnTime;
-          taskTime = mobs * mobKillTime;
-          const failureDPR = taskTime * (100-blessing) / 100;
-
-          taskTime = successDPR + failureDPR;
-        } else {
-          mobKillTime = attackSpeed * hitsRaw + respawnTime;
-          taskTime = mobs * mobKillTime;
+const menus = {
+  basecamp: {
+    name: "Basecamp Calculator (Levels 1–75)",
+    render: function(container) {
+      container.innerHTML = `
+        <div>
+          Current Basecamp:
+          <select id="basecampStart">${[...Array(75)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}</select>
+          Goal Basecamp:
+          <select id="basecampEnd">${[...Array(75)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}</select>
+          <button id="calcBtn">Calculate</button>
+        </div>
+        <div id="menuResults"></div>
+      `;
+      container.querySelector('#calcBtn').addEventListener('click', () => {
+        const start = parseInt(document.getElementById('basecampStart').value, 10);
+        const end   = parseInt(document.getElementById('basecampEnd').value, 10);
+        if (isNaN(start) || isNaN(end) || start > end) {
+          alert("Please choose valid start and goal levels (start ≤ goal).");
+          return;
         }
-        
-        let kcPerTask = wish === "max" ? task.kc.max : task.kc.no;
-        if (cape === "slayer") kcPerTask *= 2;
-
-        let result = "";
-
-        if (mode === "kc") {
-          const kcGoal = parseFloat(document.getElementById("kcInput").value);
-          const tasksNeeded = Math.ceil(kcGoal / kcPerTask);
-          const totalTime = tasksNeeded * taskTime;
-          result = `Tasks Needed: ${tasksNeeded}\nEstimated Time: ${formatTime(totalTime)}`;
-        } else if (mode === "time") {
-          const timeInput = document.getElementById("timeInput").value.trim();
-          const [hh = 0, mm = 0, ss = 0] = timeInput.split(":").map(Number);
-          const availableSeconds = (hh * 3600) + (mm * 60) + (ss);
-          const tasksPossible = Math.floor(availableSeconds / taskTime);
-          const kcEarned = Math.floor(tasksPossible * kcPerTask);
-          result = `You can complete ${tasksPossible} task(s).\nEstimated KC Earned: ${kcEarned}`;
-        } else if (mode === "caskets") {
-          const casketTarget = parseFloat(document.getElementById("casketInput").value);
-          const casketType = document.getElementById("casketType").value;
-          const kcPerCasket = casketType === "slayer" ? 2000 : 5000;
-          const kcNeeded = casketTarget * kcPerCasket;
-          const tasksNeeded = Math.ceil(kcNeeded / kcPerTask);
-          const totalTime = tasksNeeded * taskTime;
-          result = `Tasks Needed: ${tasksNeeded}\nEstimated Time: ${formatTime(totalTime)}`;
-        } else if (mode === "optimal") {
-          const inputType = document.getElementById("optimalInputType").value;
-          const inputValue = inputType === "kc"
-            ? parseFloat(document.getElementById("kcInput").value)
-            : parseFloat(document.getElementById("casketInput").value) * (document.getElementById("casketType").value === "slayer" ? 2000 : 5000);
-          let bestTask = "";
-          let bestTime = Infinity;
-          for (const key in taskData) {
-            const t = taskData[key];
-            let mobs = t.mobs;
-            if (basecamp >= 69) mobs = Math.ceil(mobs * 0.8);
-            let kc = wish === "max" ? t.kc.max : t.kc.no;
-            if (cape === "slayer") kc *= 2;
-            const time = Math.ceil(inputValue / kc) * mobs * mobKillTime;
-            if (time < bestTime) {
-              bestTime = time;
-              bestTask = key;
-            }
-          }
-          result = `Optimal Task: ${bestTask.charAt(0).toUpperCase() + bestTask.slice(1)}\nEstimated Time: ${formatTime(bestTime)}`;
+        const totals = calculateTotals(basecampData, start, end);
+        let html = '<h2>Required Items</h2><ul>';
+        for (const [item, amt] of Object.entries(totals.required)) {
+          html += `<li>${item}: ${amt.toLocaleString()}</li>`;
         }
-
-        document.getElementById("results").innerText = result;
+        html += '</ul>';
+        html += '<h2>Reward Items</h2><ul>';
+        for (const [item, amt] of Object.entries(totals.rewards)) {
+          html += `<li>${item}: ${amt.toLocaleString()}</li>`;
+        }
+        html += '</ul>';
+        container.querySelector('#menuResults').innerHTML = html;
       });
+    }
+  }
+  // You can add new menus here — just follow the same pattern:
+  // key: { name: "Menu Name", render: function(container) { ... } }
+};
 
-      updateModeInputs();
-    });
-  </script>
+// =================== UTILITY FUNCTIONS ===================
+
+function calculateTotals(data, start, end) {
+  const required = {};
+  const rewards  = {};
+  for (let lvl = start; lvl <= end; lvl++) {
+    const entry = data[lvl];
+    if (!entry) continue;
+    for (const [itm, amt] of Object.entries(entry.required || {})) {
+      required[itm] = (required[itm] || 0) + amt;
+    }
+    for (const [itm, amt] of Object.entries(entry.rewards || {})) {
+      rewards[itm] = (rewards[itm] || 0) + amt;
+    }
+  }
+  return { required, rewards };
+}
+
+// =================== INITIALIZATION ===================
+
+const menuSelect = document.getElementById('menuSelect');
+const menuContainer = document.getElementById('menuContainer');
+for (const key in menus) {
+  const opt = document.createElement('option');
+  opt.value = key;
+  opt.textContent = menus[key].name;
+  menuSelect.appendChild(opt);
+}
+menus[menuSelect.value].render(menuContainer);
+menuSelect.addEventListener('change', () => {
+  menus[menuSelect.value].render(menuContainer);
+});
+</script>
+
 </body>
 </html>
