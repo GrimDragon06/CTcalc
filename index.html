@@ -11,7 +11,7 @@
       background-color: #121212;
       color: #f0f0f0;
     }
-    select, button, input {
+    select, button, input, textarea {
       margin: 5px 0;
       font-size: 16px;
       padding: 5px 8px;
@@ -20,7 +20,7 @@
       border: 1px solid #333;
       border-radius: 4px;
     }
-    button:hover, select:hover, input:hover {
+    button:hover, select:hover, input:hover, textarea:hover {
       border-color: #555;
     }
     h1 {
@@ -61,6 +61,13 @@
       border: 1px solid #333;
       border-radius: 4px;
     }
+    .two-col { display: flex; gap: 12px; flex-wrap:wrap; }
+    .col { flex: 1 1 300px; min-width:260px; }
+    .small { width:120px; display:inline-block; margin-right:8px; vertical-align:middle;}
+    .results-box { background:#0f0f0f; padding:10px; border-radius:6px; margin-top:10px; }
+    .label { display:block; margin-top:8px; font-size:14px; color:#ccc; }
+    table { width:100%; border-collapse:collapse; margin-top:8px;}
+    td, th { padding:6px; border-bottom:1px solid #222; text-align:left;}
   </style>
 </head>
 <body>
@@ -258,40 +265,6 @@ const alchemyPotions = [
   { name: "Soul Reaper Potion", level: 130, exp: 100000, materials: ["Liquid Death Potion","Gold Coin","Dark Thread","Stone Tablet"], amounts: [25,7500,50,50] }
 ];
 
-// =================== ALCHEMY XP CALCULATOR (renderer) ===================
-function renderAlchemyXP(container) {
-  container.innerHTML = `
-    <div>
-      <label>Select Potion:</label>
-      <select id="alchemyPotionSelect">
-        ${alchemyPotions.map((p,i)=>`<option value="${i}">${p.name} (Lvl ${p.level})</option>`).join('')}
-      </select>
-      <label>Quantity:</label>
-      <input type="number" id="alchemyQuantity" value="1" min="1" style="width:60px;">
-      <button id="alchemyCalcBtn">Calculate XP & Materials</button>
-    </div>
-    <div id="alchemyResults"></div>
-  `;
-
-  container.querySelector('#alchemyCalcBtn').addEventListener('click', () => {
-    const idx = parseInt(container.querySelector('#alchemyPotionSelect').value,10);
-    const qty = parseInt(container.querySelector('#alchemyQuantity').value,10);
-    if (isNaN(qty) || qty < 1) {
-      return alert("Enter a valid quantity.");
-    }
-    const potion = alchemyPotions[idx];
-
-    let html = `<h2>${potion.name} x${qty}</h2>`;
-    html += `<p><strong>Total XP:</strong> ${(potion.exp * qty).toLocaleString()}</p>`;
-    html += `<h3>Required Materials:</h3><ul>`;
-    for (let i = 0; i < potion.materials.length; i++) {
-      html += `<li>${potion.materials[i]}: ${(potion.amounts[i] * qty).toLocaleString()}</li>`;
-    }
-    html += "</ul>";
-    container.querySelector('#alchemyResults').innerHTML = html;
-  });
-}
-
 // =================== UTILITY FUNCTIONS ===================
 function calculateTotals(data, start, end) {
   const required = {};
@@ -485,6 +458,378 @@ const menus = {
   endgameWell: {
     name: "Endgame Wishing Well",
     render: renderEndgameWishingWell
+  },
+
+  // ---------------- NEW: Combat Calculator ----------------
+  combatCalc: {
+    name: "Combat Calculator",
+    render: function(container) {
+      container.innerHTML = `<div>
+        <h2>Combat Calculator</h2>
+        <div class="two-col">
+          <div class="col">
+            <label class="label">Choose Enemy:</label>
+            <select id="cc_enemy"></select>
+
+            <label class="label">Fight duration (optional) - Day:Hour:Min:Sec</label>
+            <input id="cc_duration" type="text" value="0:0:0:10" placeholder="0:0:0:10">
+
+            <label class="label">Basecamp level (affects combat caps/bonuses):</label>
+            <select id="cc_basecamp">${[...Array(75)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}</select>
+
+            <label class="label">Beginner Wishing Well inferred next-cost (gold) (affects some rewards):</label>
+            <input id="cc_bw_cost" type="number" value="3">
+
+            <label class="label">Endgame Wishing Well inferred next-cost (gold):</label>
+            <input id="cc_ew_cost" type="number" value="15000">
+
+            <label class="label">Combat boost (%) (e.g. temporary boosts):</label>
+            <input id="cc_combat_boost" type="number" value="0" min="0">
+          </div>
+
+          <div class="col">
+            <label class="label">Player skill levels</label>
+            <div><span class="small">Attack</span><input id="cc_level_attack" type="number" value="99" min="1"></div>
+            <div><span class="small">Strength</span><input id="cc_level_strength" type="number" value="99" min="1"></div>
+            <div><span class="small">Archery</span><input id="cc_level_archery" type="number" value="99" min="1"></div>
+
+            <label class="label">Choose equipment (items are loaded from items.json)</label>
+            <div><label>Helm:</label><select id="cc_helm"></select></div>
+            <div><label>Top:</label><select id="cc_top"></select></div>
+            <div><label>Pants / Legs:</label><select id="cc_legs"></select></div>
+            <div><label>Boots:</label><select id="cc_boots"></select></div>
+            <div><label>Weapon:</label><select id="cc_weapon"></select></div>
+            <div><label>Shield:</label><select id="cc_shield"></select></div>
+            <div><label>Ring:</label><select id="cc_ring"></select></div>
+            <div><label>Cape:</label><select id="cc_cape"></select></div>
+            <div><label>Necklace:</label><select id="cc_neck"></select></div>
+            <div><label>Pet:</label><select id="cc_pet"></select></div>
+
+            <label class="label">Optional: Slayer Task (enter monster name exactly or leave blank)</label>
+            <input id="cc_slayer_task" type="text" placeholder="e.g. Elven Archer">
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <button id="cc_calculate">Calculate Combat Results</button>
+        </div>
+
+        <div id="cc_results" class="results-box"></div>
+      </div>`;
+
+      // Preload enemy dataset (extracted from CombatManager.java)
+      // Arrays below are taken from the provided CombatManager.java (enemyNames, enemyHealth, enemyAttack, enemyStrength, enemyDefence, enemyDrops)
+      const enemyNames = [ "Chicken","Crow","Rat","Sheep","Goat","Pig","Ox","Young Goblin","Goblin Grump","Goblin Guard","Goblin Chief","Jin","Red Ghoul","Grey Wolf","Cyclops","Cave Demon","Banshee","Cave Beast","Giant Cave Spider","Wild Dog","Crocodile","Lion","Brown Bear","Skeletal Bear","Baby Red Dragon","Baby Blue Dragon","Undead Dragon","Ancient Dragon","Green Dragon","Water Dragon","King Dragon","Dragon Queen","Elite Chicken","Elite Crow","Elite Rat","Elite Sheep","Elite Goat","Elite Pig","Elite Ox","Training Dummy","Ghost","Phoenix","Nightmare","Orc Captain","Cobra","Skeletal Hound","Necromancer","Fluffy","Blue Devil","Ancient Tribal Leader","Dummy Queen","Scarab Queen","Spider Queen","Undead Dragon Queen","Bone King","Skeletal King","Living Armour King","Orc King","Elven Fairy","Elven Warrior","Elven Archer","Elven Mage","Elven King","Elven Queen","Amaran","Aurial","Cognium","Copina","Feroxi","Kynosian","Noctyra","Opulina","Practice Dummy","Spider Clone","Dragon Queen Clone","Tribal Leader Clone","Orc King Clone","Elven Queen Clone","Zombie","Shadow Creature","Shadow Dragon" ];
+
+      const enemyHealth = [ 10,20,30,50,75,100,150,35,75,135,225,375,600,90,150,300,450,675,1000,180,360,570,750,1200,800,1000,1600,2800,4000,5200,8000,15000,10000,15000,20000,25000,30000,50000,75000,35,75,250,400,600,750,1500,2500,5000,8000,12000,50000,75000,100000,150000,200000,250000,300000,400000,100000,150000,300000,400000,600000,750000,7000000,4000000,6000000,5000000,6500000,5000000,6000000,4500000,1,6000000,7000000,8000000,9000000,10000000,12000000,15000000,20000000 ];
+
+      const enemyAttack = [1,5,5,10,10,15,25,10,15,25,45,70,80,35,60,75,75,80,90,50,65,70,80,95,120,150,180,250,300,350,400,800,300,500,400,600,750,900,1200,10,30,50,60,70,80,140,200,250,350,600,2000,2400,3000,3750,5000,7500,10000,15000,8000,9000,12000,15000,24000,30000,70000,60000,80000,60000,90000,80000,100000,70000,1,120000,150000,180000,230000,260000,300000,350000,400000 ];
+
+      const enemyStrength = [1,4,10,15,25,15,30,15,15,20,60,65,90,50,75,65,80,80,95,65,70,75,90,120,120,150,220,280,350,350,450,750,300,400,450,600,750,900,1200,10,25,60,70,80,90,160,250,300,500,800,800,1400,2000,2400,3600,4800,6000,7200,6000,8000,10000,15000,25000,40000,300000,225000,450000,225000,562500,525000,562500,262500,1,600000,800000,1000000,1200000,1400000,1800000,2000000,2500000 ];
+
+      const enemyDefence = [1,5,8,15,15,25,40,5,10,35,50,70,85,40,70,60,70,80,85,55,50,60,85,100,120,130,140,300,240,300,450,2000,200,300,200,400,600,750,1000,10,20,50,75,75,85,120,200,350,400,850,850,1000,1500,1700,2500,3800,5000,8500,10000,12000,14000,16000,18000,25000,67500,36000,54000,40500,63000,36000,67500,45000,1,300000,360000,450000,540000,630000,750000,900000,1200000 ];
+
+      const enemyDrops = [
+        "Bones,1,1,Always/Feathers,1,3,Always/Egg,1,1,Uncommon/Drumstick,1,1,Rare/Thread,1,1,Common/Birds Nest,1,1,Uncommon/Common Key,1,1,Rare/Chicken Knife,1,1,Secret Rare",
+        "Bones,1,1,Always/Feathers,3,6,Always/Evergreen Arrow Shafts,5,10,Uncommon/Egg,1,1,Uncommon/Thread,1,3,Common/Coins,2,10,Uncommon/Birds Nest,1,2,Uncommon/Common Chest,1,1,Rare/Raw Shrimp,1,1,Uncommon",
+        "Bones,1,1,Always/Coins,1,5,Uncommon/Stone Arrowheads,5,10,Uncommon/Common Chest,1,1,Rare/Thread,2,5,Common/Raw Shrimp,1,1,Uncommon/Emerald,1,1,Super Rare",
+        "Bones,1,1,Always/Coins,5,10,Uncommon/Wool,1,1,Common/Akomeric,1,1,Rare/Common Chest,1,1,Rare/Thread,2,6,Common/Raw Snail,1,1,Uncommon/Raw Shrimp,1,1,Common",
+        "Bones,1,1,Always/Milk,1,1,Uncommon/Oak Arrow Shafts,15,30,Rare/Coins,5,10,Uncommon/Common Chest,1,1,Rare/Thread,5,10,Common/Raw Carp,1,1,Uncommon",
+        "Bones,1,1,Always/Bacon,1,1,Common/Coins,10,20,Uncommon/Common Chest,1,1,Rare/Raw Minnows,1,1,Uncommon/Emerald,1,1,Super Rare",
+        "Bones,1,1,Always/Milk,1,1,Common/Coins,20,40,Common/Hide,1,1,Common/Common Chest,1,1,Uncommon/Thread,10,15,Common/Raw Perch,1,1,Uncommon",
+        "Bones,1,1,Always/Coins,5,10,Common/Evergreen Bow,1,1,Rare/Akomeric,1,1,Uncommon/Bloodroot,1,1,Rare/Hyssop,1,1,Rare/Red Chest,1,1,Super Rare/Oak,1,3,Common",
+        // (many more entries exist in original source; this dataset is used to estimate drops)
+      ];
+
+      // container elements
+      const enemySelect = container.querySelector('#cc_enemy');
+      const btnCalc = container.querySelector('#cc_calculate');
+      const resultsDiv = container.querySelector('#cc_results');
+
+      // populate enemy dropdown
+      enemyNames.forEach((n,i) => {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = `${n} (HP: ${enemyHealth[i] || '?'})`;
+        enemySelect.appendChild(opt);
+      });
+
+      // load items.json and populate equipment selects
+      let items = [];
+      fetch('items.json').then(r => {
+        if (!r.ok) throw new Error('items.json not found');
+        return r.json();
+      }).then(data => {
+        items = data;
+        populateEquipmentSelectors(items);
+      }).catch(err => {
+        // fallback empty lists if items.json not available
+        console.warn('Could not load items.json:', err);
+        items = [];
+        populateEquipmentSelectors(items);
+      });
+
+      function populateEquipmentSelectors(itemsList) {
+        function addOptions(selectEl, filterFn) {
+          selectEl.innerHTML = '<option value="">(none)</option>';
+          itemsList.filter(filterFn).forEach(it => {
+            const opt = document.createElement('option');
+            opt.value = it.name;
+            opt.textContent = `${it.name} ${it.attack?`(atk ${it.attack})`:''}${it.strength?` (str ${it.strength})`:''}${it.defence?` (def ${it.defence})`:''}`;
+            selectEl.appendChild(opt);
+          });
+        }
+        addOptions(container.querySelector('#cc_helm'), it => /Helm/i.test(it.type) || /Helm/i.test(it.name));
+        addOptions(container.querySelector('#cc_top'), it => /Top/i.test(it.type) || /Top/i.test(it.name) || /Robe Top/i.test(it.type));
+        addOptions(container.querySelector('#cc_legs'), it => /Legs|Greaves|Bottoms|Leggings/i.test(it.type) || /Legs|Greaves/i.test(it.name));
+        addOptions(container.querySelector('#cc_boots'), it => /Boots/i.test(it.type) || /Boots/i.test(it.name));
+        addOptions(container.querySelector('#cc_weapon'), it => /Weapon/i.test(it.type) || /Sword|Axe|Scimitar|Bow|Staff|Dagger|Scythe/i.test(it.name));
+        addOptions(container.querySelector('#cc_shield'), it => /Shield|Defence/i.test(it.name) || /Shield/i.test(it.type));
+        addOptions(container.querySelector('#cc_ring'), it => /Ring/i.test(it.name) || /Ring/i.test(it.type));
+        addOptions(container.querySelector('#cc_cape'), it => /Cape/i.test(it.type) || /Cape/i.test(it.name));
+        addOptions(container.querySelector('#cc_neck'), it => /Necklace/i.test(it.name) || /Necklace/i.test(it.type));
+        addOptions(container.querySelector('#cc_pet'), it => /Pet|Avatar|Ace|Saul|Troll|Adam|Saul|Carrie/i.test(it.name) || /Mystery/i.test(it.type));
+      }
+
+      // utility to get item by name
+      function findItem(name) {
+        if (!name) return null;
+        return items.find(i => i.name === name) || null;
+      }
+
+      // parse duration "D:H:M:S" to milliseconds
+      function parseDuration(msStr) {
+        const parts = msStr.split(':').map(p => parseInt(p||'0',10));
+        if (parts.length === 4) {
+          const [d,h,m,s] = parts;
+          return (((((d*24)+h)*60)+m)*60+s) * 1000;
+        }
+        // fallback: try seconds
+        const s = parseFloat(msStr);
+        return (isNaN(s) ? 0 : s*1000);
+      }
+
+      // basic damage formulas (approximation derived from provided Java code patterns)
+      // NOTE: The original Android code contains many modifiers. This calculator reproduces a simplified version:
+      function calculateMeleeDamage(attackLevel, strengthLevel, attackBonus, strengthBonus, weaponAttack, enemyDef) {
+        // attackEffect and strengthEffect are simplified multipliers
+        const attackStat = attackLevel + attackBonus;
+        const strengthStat = strengthLevel + strengthBonus;
+
+        // Base formula approximation:
+        // base = floor( (attackStat * 0.4) + (strengthStat * 0.8) + weaponAttack - enemyDef * 0.2 )
+        let base = Math.floor((attackStat * 0.4) + (strengthStat * 0.8) + (weaponAttack || 0) - (enemyDef * 0.2));
+        base = Math.max(1, base);
+        return base;
+      }
+
+      function calculateArcheryDamage(archeryLevel, bowDamage, arrowDamage, bowAccuracy, enemyDef) {
+        // approximate: base = bowDamage + arrowDamage + floor(archeryLevel * 0.8) - enemyDef*0.15
+        let base = Math.floor((bowDamage || 0) + (arrowDamage || 0) + (archeryLevel * 0.8) - (enemyDef * 0.15));
+        base = Math.max(1, base);
+        return base;
+      }
+
+      // Estimate drop probability mapping based on rarity string in enemyDrops
+      const rarityProb = {
+        "Always": 1.0,
+        "Common": 0.6,
+        "Uncommon": 0.3,
+        "Rare": 0.07,
+        "Super Rare": 0.02,
+        "Legendary": 0.005,
+        "Secret Rare": 0.001
+      };
+
+      // parse an enemy drop string into structured list
+      function parseDropString(dropStr) {
+        const parts = dropStr.split('/');
+        const parsed = [];
+        parts.forEach(p => {
+          const comps = p.split(',').map(s => s.trim());
+          if (comps.length >= 4) {
+            const name = comps[0];
+            const min = parseInt(comps[1],10) || 1;
+            const max = parseInt(comps[2],10) || min;
+            const rarity = comps[3];
+            parsed.push({ name, min, max, rarity });
+          }
+        });
+        return parsed;
+      }
+
+      // compute expected drops per kill using parsed drops + modifiers
+      function expectedDropsForKill(parsedDrops, gearModifiers) {
+        const expect = {};
+        parsedDrops.forEach(d => {
+          const prob = rarityProb[d.rarity] || 0.01;
+          const avgAmt = (d.min + d.max)/2;
+          let adjProb = prob;
+          // apply simple gear modifiers: Luck Potion / Ring of Secrets / Treasure boosts / wishes
+          if (gearModifiers.hasRingOfSecrets) adjProb *= 1.25;
+          if (gearModifiers.hasLuckPotion) adjProb *= 1.15;
+          if (gearModifiers.wishTreasureHunterLevels) adjProb *= 1 + gearModifiers.wishTreasureHunterLevels * 0.01;
+          // ensure prob capped at 1
+          adjProb = Math.min(adjProb, 1);
+          expect[d.name] = (expect[d.name] || 0) + adjProb * avgAmt;
+        });
+        return expect;
+      }
+
+      btnCalc.addEventListener('click', () => {
+        // collect inputs
+        const enemyIdx = parseInt(enemySelect.value,10);
+        const enemy = enemyNames[enemyIdx];
+        const hp = enemyHealth[enemyIdx] || 0;
+        const eDef = enemyDefence[enemyIdx] || 0;
+        const durationMs = parseDuration(container.querySelector('#cc_duration').value || '0:0:0:10');
+        const basecamp = parseInt(container.querySelector('#cc_basecamp').value,10) || 1;
+        const bwCost = parseInt(container.querySelector('#cc_bw_cost').value || 0,10);
+        const ewCost = parseInt(container.querySelector('#cc_ew_cost').value || 0,10);
+        const combatBoostPct = parseFloat(container.querySelector('#cc_combat_boost').value || 0) || 0;
+
+        const attackLevel = parseInt(container.querySelector('#cc_level_attack').value || 1,10);
+        const strengthLevel = parseInt(container.querySelector('#cc_level_strength').value || 1,10);
+        const archeryLevel = parseInt(container.querySelector('#cc_level_archery').value || 1,10);
+
+        // equipment
+        const equipNames = [
+          container.querySelector('#cc_helm').value,
+          container.querySelector('#cc_top').value,
+          container.querySelector('#cc_legs').value,
+          container.querySelector('#cc_boots').value,
+          container.querySelector('#cc_weapon').value,
+          container.querySelector('#cc_shield').value,
+          container.querySelector('#cc_ring').value,
+          container.querySelector('#cc_cape').value,
+          container.querySelector('#cc_neck').value,
+          container.querySelector('#cc_pet').value
+        ];
+
+        const equipItems = equipNames.map(n => findItem(n)).filter(Boolean);
+
+        // sum stats
+        let atkBonus = 0, strBonus = 0, defBonus = 0, weaponAttack = 0;
+        let bowDamage = 0, arrowDamage = 0, bowAccuracy = 50;
+        const gearModifiers = {
+          hasRingOfSecrets: false,
+          hasLuckPotion: false,
+          wishTreasureHunterLevels: 0
+        };
+
+        equipItems.forEach(it => {
+          atkBonus += (it.attack || 0);
+          strBonus += (it.strength || 0);
+          defBonus += (it.defence || 0);
+          weaponAttack += (it.attack && /Weapon/i.test(it.type)) ? it.attack : 0;
+          // bow / arrow lookup by name (best-effort)
+          if (/Bow/i.test(it.name)) {
+            bowDamage += (it.attack || 0);
+          }
+          if (/Arrow/i.test(it.name)) {
+            arrowDamage += (it.attack || 0);
+          }
+          if (/Ring of Secrets/i.test(it.name)) gearModifiers.hasRingOfSecrets = true;
+          if (/Luck Potion/i.test(it.name)) gearModifiers.hasLuckPotion = true;
+        });
+
+        // include wishing well levels inference (approx): if user provided next-cost we infer already-made wishes and increase treasure chance
+        try {
+          const bw = calculateBeginnerFromNextCost(bwCost);
+          const ew = calculateEndgameFromNextCost(ewCost);
+          // treat beginner wishes as 'Treasure Hunter' effect approx
+          gearModifiers.wishTreasureHunterLevels = Math.round((bw.alreadyMade || 0) / 100); // heuristic
+          // more Endgame wishes increase rare chances
+          gearModifiers.endgameWishes = ew.alreadyMade || 0;
+        } catch(e) {
+          // ignore
+        }
+
+        // compute attack speed (approximation from CombatManager.get Attack Speed patterns)
+        // base attack speed (non-bow) approximated as 2000 - attackLevel*5 (see Java code pattern)
+        let attackSpeedMs = Math.max(500, 2000 - attackLevel * 5);
+        // archery uses BowSpeed if bow equipped - approximate by decreasing by archery level
+        const bowEquipped = equipItems.some(it => /Bow/i.test(it.name));
+        if (bowEquipped) {
+          // Bow speed: approximate from bowQuality: faster bows reduce ms
+          attackSpeedMs = Math.max(400, 2000 - Math.floor(archeryLevel * 6));
+        }
+
+        // apply basecamp speed bonus (BaseTower had Speed Please wish & basecamp levels influence)
+        if (basecamp >= 60) {
+          attackSpeedMs = Math.max(200, attackSpeedMs - Math.floor(attackSpeedMs * 0.2)); // 20% faster as in code
+        }
+
+        // Apply combat boost percent (temporary)
+        const combatBoostMul = 1 + (combatBoostPct / 100);
+
+        // compute damage per hit (avg)
+        const meleePerHit = Math.floor(calculateMeleeDamage(attackLevel, strengthLevel, atkBonus, strBonus, weaponAttack, eDef) * combatBoostMul);
+        const archeryPerHit = Math.floor(calculateArcheryDamage(archeryLevel, bowDamage, arrowDamage, bowAccuracy, eDef) * combatBoostMul);
+
+        // choose attack style: if weapon is bow, use archery; else melee
+        const isArchery = bowEquipped;
+        const avgDmg = isArchery ? archeryPerHit : meleePerHit;
+        const hitsToKill = Math.max(1, Math.ceil(hp / avgDmg));
+        const timeToKillMs = hitsToKill * attackSpeedMs;
+        const timeToKillStr = msToDHMS(timeToKillMs);
+
+        // kills possible in given duration
+        const killsInDuration = (durationMs > 0) ? Math.floor(durationMs / attackSpeedMs) : 0;
+
+        // parse enemy drops (best-effort)
+        const dropsStr = enemyDrops[enemyIdx] || "";
+        const parsedDrops = parseDropString(dropsStr);
+        const expectedPerKill = expectedDropsForKill(parsedDrops, gearModifiers);
+
+        // scale expected by killsInDuration
+        const expectedTotalDrops = {};
+        for (const [k,v] of Object.entries(expectedPerKill)) {
+          expectedTotalDrops[k] = v * killsInDuration;
+        }
+
+        // build results html
+        let html = `<h3>Combat Summary vs ${enemy}</h3>`;
+        html += `<table><tr><th>Stat</th><th>Value</th></tr>`;
+        html += `<tr><td>Enemy HP</td><td>${hp.toLocaleString()}</td></tr>`;
+        html += `<tr><td>Estimated damage per hit</td><td>${avgDmg.toLocaleString()} (${isArchery?'Archery':'Melee'})</td></tr>`;
+        html += `<tr><td>Attack speed (ms per hit)</td><td>${attackSpeedMs} ms</td></tr>`;
+        html += `<tr><td>Hits to kill 1 enemy</td><td>${hitsToKill.toLocaleString()}</td></tr>`;
+        html += `<tr><td>Time to kill 1 enemy</td><td>${timeToKillStr} (${timeToKillMs.toLocaleString()} ms)</td></tr>`;
+        html += `<tr><td>Planned fight duration</td><td>${msToDHMS(durationMs)} (${durationMs.toLocaleString()} ms)</td></tr>`;
+        html += `<tr><td>Estimated kills in duration</td><td>${killsInDuration.toLocaleString()}</td></tr>`;
+        html += `</table>`;
+
+        html += `<h4>Expected drops (per kill average)</h4>`;
+        html += `<div><table><tr><th>Item</th><th>Per kill (avg)</th><th>Estimated total in planned duration</th></tr>`;
+        for (const [itemName, perKill] of Object.entries(expectedPerKill)) {
+          html += `<tr><td>${itemName}</td><td>${perKill.toFixed(3)}</td><td>${(expectedTotalDrops[itemName]||0).toFixed(2)}</td></tr>`;
+        }
+        html += `</table></div>`;
+
+        html += `<h4>Selected Equipment Summary</h4>`;
+        html += `<ul>`;
+        equipNames.forEach((nm, idx) => {
+          if (nm) html += `<li>${["Helm","Top","Legs","Boots","Weapon","Shield","Ring","Cape","Necklace","Pet"][idx]}: ${nm}</li>`;
+        });
+        html += `</ul>`;
+
+        html += `<div style="margin-top:10px;color:#ccc;font-size:13px;">Note: This calculator reproduces a simplified approximation of the in-game formulas from the provided code. The original game has many conditional modifiers (potions, special equipment sets, event modifiers, etc.) — this tool estimates averages using the items.json stats and enemy data embedded here.</div>`;
+
+        resultsDiv.innerHTML = html;
+      });
+
+      // small helper
+      function msToDHMS(ms) {
+        if (!ms || ms<=0) return '0s';
+        let s = Math.floor(ms/1000);
+        const d = Math.floor(s / (3600*24)); s -= d*3600*24;
+        const h = Math.floor(s/3600); s -= h*3600;
+        const m = Math.floor(s/60); s -= m*60;
+        return `${d}d ${h}h ${m}m ${s}s`;
+      }
+
+    }
   }
 };
 
@@ -509,6 +854,8 @@ if (menuSelect.options.length > 0) {
 menuSelect.addEventListener('change', () => {
   menus[menuSelect.value].render(menuContainer);
 });
+
+// =================== End of script ===================
 </script>
 
 </body>
