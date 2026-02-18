@@ -419,6 +419,98 @@ function renderEndgameWishingWell(container) {
   });
 }
 
+function renderBasecampCalculator(container) {
+  container.innerHTML = `
+    <h2>Basecamp Calculator (Levels 1–75)</h2>
+    <label>Current Level: <input id="basecampCurrent" type="number" min="1" max="75" value="1" class="small"></label>
+    <label>Target Level: <input id="basecampTarget" type="number" min="1" max="75" value="2" class="small"></label>
+    <div style="margin-top:8px;">
+      <button id="basecampCalcBtn">Calculate Requirements</button>
+    </div>
+    <div id="menuResults" class="result-block"></div>
+  `;
+
+  container.querySelector('#basecampCalcBtn').addEventListener('click', () => {
+    const current = parseInt(container.querySelector('#basecampCurrent').value, 10);
+    const target = parseInt(container.querySelector('#basecampTarget').value, 10);
+
+    if (Number.isNaN(current) || Number.isNaN(target) || current < 1 || target > 75 || current >= target) {
+      container.querySelector('#menuResults').innerHTML = '<p>Please enter a valid level range between 1 and 75, where target is greater than current.</p>';
+      return;
+    }
+
+    const totalRequired = {};
+    const totalRewards = {};
+
+    for (let level = current; level < target; level++) {
+      const entry = basecampData[level];
+      if (!entry) continue;
+
+      for (const [item, amount] of Object.entries(entry.required || {})) {
+        totalRequired[item] = (totalRequired[item] || 0) + amount;
+      }
+      for (const [item, amount] of Object.entries(entry.rewards || {})) {
+        totalRewards[item] = (totalRewards[item] || 0) + amount;
+      }
+    }
+
+    let html = `<h3>Total for levels ${current} → ${target}</h3>`;
+    html += '<h4>Required Materials</h4><ul>';
+    for (const [item, amount] of Object.entries(totalRequired).sort((a, b) => a[0].localeCompare(b[0]))) {
+      html += `<li>${item}: ${amount.toLocaleString()}</li>`;
+    }
+    if (Object.keys(totalRequired).length === 0) {
+      html += '<li>No requirements found for this range.</li>';
+    }
+    html += '</ul>';
+
+    html += '<h4>Rewards</h4><ul>';
+    for (const [item, amount] of Object.entries(totalRewards).sort((a, b) => a[0].localeCompare(b[0]))) {
+      html += `<li>${item}: ${amount.toLocaleString()}</li>`;
+    }
+    if (Object.keys(totalRewards).length === 0) {
+      html += '<li>No rewards found for this range.</li>';
+    }
+    html += '</ul>';
+
+    container.querySelector('#menuResults').innerHTML = html;
+  });
+}
+
+function renderTreasureHunt(container) {
+  container.innerHTML = `
+    <h2>Treasure Hunt Clues</h2>
+    <input id="treasureSearch" type="text" placeholder="Search clue, skill, or task...">
+    <div id="treasureResults" class="result-block"></div>
+  `;
+
+  const searchInput = container.querySelector('#treasureSearch');
+  const resultsEl = container.querySelector('#treasureResults');
+
+  const render = () => {
+    const query = (searchInput.value || '').trim().toLowerCase();
+    const filtered = treasureHuntData.filter((entry) => {
+      if (!query) return true;
+      return entry.clue.toLowerCase().includes(query)
+        || entry.skill.toLowerCase().includes(query)
+        || entry.task.toLowerCase().includes(query);
+    });
+
+    let html = `<p>Showing ${filtered.length} clue(s)</p><ul>`;
+    for (const entry of filtered) {
+      html += `<li><strong>${entry.skill}:</strong> ${entry.task}<br><em>${entry.clue}</em></li>`;
+    }
+    if (!filtered.length) {
+      html += '<li>No clues match your search.</li>';
+    }
+    html += '</ul>';
+    resultsEl.innerHTML = html;
+  };
+
+  searchInput.addEventListener('input', render);
+  render();
+}
+
 // =================== ENEMIES (extracted from CombatManager.java content) ===================
 // NOTE: ensure enemyNames, enemyHealth, enemyDefence, enemyDropsRaw arrays exist in this file (they were present in original). Please keep them unchanged.
 
@@ -666,8 +758,8 @@ function heuristicBowSpeed(bowName) {
 // =================== Remainder: Combat Calculator UI integration ===================
 
 const menus = {
-  basecamp: { name: "Basecamp Calculator (Levels 1–75)", render: function(container) { /* unchanged */ container.innerHTML = ' ' } },
-  treasureHunt: { name: "Treasure Hunt Clues", render: function(container) { /* unchanged */ container.innerHTML = ' ' } },
+  basecamp: { name: "Basecamp Calculator (Levels 1–75)", render: renderBasecampCalculator },
+  treasureHunt: { name: "Treasure Hunt Clues", render: renderTreasureHunt },
   alchemyXP: { name: "Alchemy XP Calculator", render: renderAlchemyXP },
   beginnerWell: { name: "Beginner Wishing Well", render: renderBeginnerWishingWell },
   endgameWell: { name: "Endgame Wishing Well", render: renderEndgameWishingWell },
