@@ -1,1115 +1,363 @@
- (cd "$(git rev-parse --show-toplevel)" && git apply --3way <<'EOF' 
-diff --git a/index.html b/index.html
-index 88fe0f697f20624b407f38c569af76cdb45b48e5..cd7b766770d6c533063950064ee1743e37d32e3c 100644
---- a/index.html
-+++ b/index.html
-@@ -1,127 +1,62 @@
- <!DOCTYPE html>
- <html lang="en">
- <head>
-   <meta charset="UTF-8" />
-   <meta name="viewport" content="width=device-width, initial-scale=1" />
--  <title>Basecamp Calculator & Treasure Hunt Clues</title>
-+  <title>CT Calculator Hub</title>
-   <style>
--    body {
--      font-family: Arial, sans-serif;
--      margin: 20px;
--      background-color: #121212;
--      color: #f0f0f0;
--    }
--    select, button, input, textarea {
--      margin: 5px 0;
--      font-size: 16px;
--      padding: 5px 8px;
--      background-color: #1f1f1f;
--      color: #f0f0f0;
--      border: 1px solid #333;
--      border-radius: 4px;
--    }
--    button:hover, select:hover, input:hover, textarea:hover {
--      border-color: #555;
--    }
--    h1 {
--      font-size: 28px;
--    }
--    h2 {
--      margin-top: 24px;
--      font-size: 22px;
--    }
--    ul {
--      list-style: none;
--      padding-left: 0;
--    }
--    li {
--      margin-bottom: 6px;
--    }
--    .menu-container {
--      margin-top: 20px;
--      border: 1px solid #333;
--      padding: 12px;
--      background-color: #1b1b1b;
--      border-radius: 6px;
--    }
--    #menuResults ul, #treasureResults ul {
--      background-color: #1f1f1f;
--      padding: 10px;
--      border-radius: 6px;
--    }
--    #menuResults li, #treasureResults li {
--      padding: 3px 0;
--    }
--    #treasureSearch {
--      width: 100%;
--      padding: 6px;
--      margin-bottom: 10px;
--      background-color: #1f1f1f;
--      color: #f0f0f0;
--      border: 1px solid #333;
--      border-radius: 4px;
--    }
--    .grid {
--      display: grid;
--      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
--      gap: 12px;
--    }
--    .slot-select {
--      display:flex;
--      flex-direction:column;
--    }
--    .small {
--      width: 120px;
--    }
--    .wide {
--      width: 100%;
--    }
--    .result-block {
--      background:#181818;
--      padding:10px;
--      border-radius:6px;
--      border:1px solid #2b2b2b;
--      margin-top:10px;
--    }
--    pre {
--      white-space: pre-wrap;
--      word-wrap: break-word;
--    }
-+    :root { color-scheme: dark; }
-+    body { font-family: Arial, sans-serif; margin: 20px; background:#121212; color:#f0f0f0; }
-+    h1 { margin:0 0 16px; }
-+    h2 { margin:0 0 10px; }
-+    label { display:block; margin:8px 0 4px; }
-+    input, select, button { background:#1f1f1f; color:#f0f0f0; border:1px solid #333; border-radius:6px; padding:8px; font-size:15px; }
-+    input, select { min-width: 180px; }
-+    button { cursor:pointer; margin-top:10px; }
-+    .card { background:#1a1a1a; border:1px solid #2f2f2f; border-radius:8px; padding:14px; margin-top:12px; }
-+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
-+    .results { margin-top:14px; }
-+    table { width:100%; border-collapse:collapse; margin-top:10px; }
-+    th, td { border:1px solid #303030; padding:8px; text-align:left; vertical-align:top; }
-+    th { background:#222; }
-+    ul { margin:6px 0; padding-left:18px; }
-+    .muted { color:#bcbcbc; font-size:13px; }
-   </style>
- </head>
- <body>
--
--  <h1>Interactive Game Calculators / Treasure Hunt</h1>
--
--  <label for="menuSelect">Select Calculator / Menu:</label>
--  <select id="menuSelect"></select>
--
--  <div id="menuContainer" class="menu-container"></div>
-+  <h1>CT Utility Menus</h1>
-+  <div class="card">
-+    <label for="menuSelect">Menu</label>
-+    <select id="menuSelect">
-+      <option value="basecamp">Basecamp Calculator</option>
-+      <option value="treasure">Treasure Hunt Answers</option>
-+    </select>
-+  </div>
-+  <div id="menuContainer" class="card"></div>
- 
- <script>
--// =================== FULL DATASET (Levels 1–75) — updated from BaseTower.java ===================
- const basecampData = {
-   1:  { required: { "Coins":10000, "Wood":200, "Thread":500 }, rewards: { "Small Exp Scroll":1 } },
-   2:  { required: { "Coins":20000, "Hide":500, "Iron":250 }, rewards: { "Small Exp Scroll":1 } },
-   3:  { required: { "Coins":30000, "Yarn":250, "Barrel":200 }, rewards: { "Small Exp Scroll":1 } },
-   4:  { required: { "Coins":40000, "Attack Potion":200, "Waterskin":100 }, rewards: { "Small Exp Scroll":1 } },
-   5:  { required: { "Coins":50000, "Gold Coin":15, "Thread":1000 }, rewards: { "Small Exp Scroll":1 } },
-   6:  { required: { "Coins":60000, "Strength Potion":250, "Coin Purse":100 }, rewards: { "Small Exp Scroll":2 } },
-   7:  { required: { "Coins":70000, "Perch":250, "Raw Perch":250 }, rewards: { "Small Exp Scroll":2 } },
-   8:  { required: { "Coins":80000, "Red Onion":100, "Strawberry":100 }, rewards: { "Small Exp Scroll":2 } },
-   9:  { required: { "Coins":90000, "Steel Bar":200, "Wood":300 }, rewards: { "Small Exp Scroll":2 } },
-  10:  { required: { "Coins":100000, "Gold Coin":30, "Energy Potion":300 }, rewards: { "Small Exp Scroll":2 } },
-  11:  { required: { "Coins":200000, "Super Defence Potion":200, "Hammer":100 }, rewards: { "Medium Exp Scroll":1 } },
-  12:  { required: { "Coins":300000, "Crab":500, "Raw Crab":500 }, rewards: { "Medium Exp Scroll":1 } },
-  13:  { required: { "Coins":400000, "Lemon":250, "Red Onion":250 }, rewards: { "Medium Exp Scroll":1 } },
-  14:  { required: { "Coins":500000, "Clownfish":500, "Raw Clownfish":500 }, rewards: { "Medium Exp Scroll":1 } },
-  15:  { required: { "Coins":1000000, "Gold Coin":45, "Yarn":2000 }, rewards: { "Medium Exp Scroll":1 } },
-  16:  { required: { "Coins":1500000, "Super Defence Potion":500, "Raft":200 }, rewards: { "Medium Exp Scroll":2 } },
-  17:  { required: { "Coins":2000000, "Diary":100, "Notebook":100 }, rewards: { "Medium Exp Scroll":2 } },
-  18:  { required: { "Coins":2500000, "Anchor":100, "Fish Hook":200 }, rewards: { "Medium Exp Scroll":2 } },
-  19:  { required: { "Coins":3000000, "Jellyfish":200, "Super Forestry Potion":100 }, rewards: { "Medium Exp Scroll":2 } },
-  20:  { required: { "Coins":5000000, "Gold Coin":60, "Mithril Bar":500 }, rewards: { "Medium Exp Scroll":2 } },
-  21:  { required: { "Coins":6000000, "Super Strength Potion":500, "Super Defence Potion":500 }, rewards: { "Large Exp Scroll":1 } },
-  22:  { required: { "Coins":7000000, "Pufferfish":500, "Raw Pufferfish":500 }, rewards: { "Large Exp Scroll":1 } },
-  23:  { required: { "Coins":8000000, "Extreme Energy Potion":300, "Crate":250 }, rewards: { "Large Exp Scroll":1 } },
-  24:  { required: { "Coins":9000000, "Workbench":250, "Rope":1000 }, rewards: { "Large Exp Scroll":1 } },
-@@ -156,51 +91,65 @@ const basecampData = {
-  53:  { required: { "Coins":1300000000, "Mystic Robe":25, "Mystic Bottoms":25 }, rewards: { "Soul Gem":50 } },
-  54:  { required: { "Coins":1400000000, "Scythe of Demeter":10, "Restoration Fragment 4":10 }, rewards: { "Casket of Treasure":100 } },
-  55:  { required: { "Coins":1500000000, "Gold Coin":25000, "Ancient Elven Book":5 }, rewards: { "Challenge Coins":20 } },
-  56:  { required: { "Coins":1600000000, "Challenger Boots":2, "Challenger Gloves":2 }, rewards: { "Enhancement Ticket":5 } },
-  57:  { required: { "Coins":1700000000, "Drakes Diary":15, "Elven Grace Potion":15000 }, rewards: { "Massive Exp Scroll":1 } },
-  58:  { required: { "Coins":1800000000, "Ring Fragments":1000, "Barbarian Top":50 }, rewards: { "Casket of Treasure":100 } },
-  59:  { required: { "Coins":1900000000, "Challenger Hat":2, "Burnt Lobster":10000 }, rewards: { "Elven Weapon Fragment":100 } },
-  60:  { required: { "Coins":2000000000, "Gold Coin":100000, "Eternal Ring":5 }, rewards: { "Challenge Coins":20 } },
-  61:  { required: { "Coins":2000000000, "Large Exp Scroll":250, "Necklace of Health":10 }, rewards: { "Enhancement Ticket":5 } },
-  62:  { required: { "Coins":2000000000, "Challenger Legs":2, "Challenger Top":2 }, rewards: { "Soul Gem":50 } },
-  63:  { required: { "Coins":2000000000, "Ring Fragments":2000, "Ring of Renewal":25 }, rewards: { "Elven Weapon Fragment":100 } },
-  64:  { required: { "Coins":2000000000, "Primal Gloves":2, "Primal Boots":2 }, rewards: { "Massive Exp Scroll":1 } },
-  65:  { required: { "Coins":2000000000, "Gold Coin":500000, "Chefs Hat":5 }, rewards: { "Casket of Treasure":250 } },
-  66:  { required: { "Coins":2000000000, "Primal Legs":2, "Primal Top":2 }, rewards: { "Elven Armour Fragment":500 } },
-  67:  { required: { "Coins":2000000000, "Ring of Life":20, "Ring of Death":20 }, rewards: { "Elven Weapon Fragment":100 } },
-  68:  { required: { "Coins":2000000000, "Ring Fragments":2500, "Wooden Stick":5 }, rewards: { "Soul Gem":50 } },
-  69:  { required: { "Coins":2000000000, "Blessed Eternal Sacrifice":5, "Goblin Cleaver":50 }, rewards: { "Massive Exp Scroll":5 } },
-  70:  { required: { "Coins":2000000000, "Gold Coin":1000000, "Cognium Ring":2 }, rewards: { "Casket of Treasure":250 } },
-  71:  { required: { "Coins":2000000000, "Necklace of Amaran":1, "Mystic Staff (E)":1 }, rewards: { "Elven Weapon Fragment":500 } },
-  72:  { required: { "Coins":2000000000, "Hatchet of the Gods":10, "Rabbits Foot":25 }, rewards: { "Soul Gem":100 } },
-  73:  { required: { "Coins":2000000000, "Burnt Shrimp":25000, "Burnt Snail":25000 }, rewards: { "Massive Exp Scroll":5 } },
-  74:  { required: { "Coins":2000000000, "Ring Fragments":5000, "Ring of Souls (E)":1 }, rewards: { "Casket of Treasure":1000 } },
-  75:  { required: { "Coins":2000000000, "Gold Coin":5000000, "Eternal Berserker Ring":10 }, rewards: { "Casket of Treasure":5000 } }
- };
- 
--// =================== TREASURE HUNT DATA ===================
-+// Easy future updates: keep this list as simple rows.
-+const basecampMeta = {
-+  1: { benefit: "+25 hidden bonus to all combat stats (stackable)", skills: ["Level 25 Fishing", "Level 25 Alchemy", "Level 25 Discovery"] },
-+  2: { benefit: "+1 extra item from exploring", skills: ["Level 25 Farming", "Level 25 Crafting", "Level 25 Cooking"] },
-+  3: { benefit: "Doubles all potions made", skills: ["Level 30 Fishing", "Level 30 Alchemy", "Level 30 Discovery"] },
-+  4: { benefit: "Permanently halves class change cost", skills: ["Level 30 Farming", "Level 30 Crafting", "Level 30 Cooking"] },
-+  5: { benefit: "Unlocks Treestone of Space", skills: ["Level 35 Fishing", "Level 35 Alchemy", "Level 35 Discovery"] },
-+  10: { benefit: "Unlocks Treestone of Time", skills: ["Level 45 Farming", "Level 45 Crafting", "Level 45 Cooking"] },
-+  15: { benefit: "Unlocks Treestone of Mind", skills: ["Level 60 Fishing", "Level 60 Alchemy", "Level 60 Discovery"] },
-+  20: { benefit: "Unlocks Treestone of Soul", skills: ["Level 70 Farming", "Level 70 Crafting", "Level 70 Cooking"] },
-+  25: { benefit: "Unlocks Treestone of Reality", skills: ["Level 85 Fishing", "Level 85 Alchemy", "Level 85 Discovery"] },
-+  30: { benefit: "Unlocks Treestone of Power", skills: ["Level 95 Farming", "Level 95 Crafting", "Level 95 Cooking"] },
-+  75: { benefit: "Sleepless storage (unlimited Tower Stash spaces)", skills: ["No skills"] }
-+};
-+
- const treasureHuntData = [
-   { clue: "A bustling waterway amidst stone and steel, where the flow never sleeps.", skill: "Fishing", task: "City River" },
-   { clue: "A great place to find a Ferris Wheel, or an Arcade. Omg Donuts and Slush!", skill: "Fishing", task: "Beach Pier" },
-   { clue: "A hidden paradise among trees, where the waters reflect the canopy above.", skill: "Fishing", task: "The Grove" },
-   { clue: "A peaceful place filled with birds chirping, the beating heart of the earth", skill: "Fishing", task: "Woodland Lake" },
-   { clue: "As strong as they come, very reliable", skill: "Forestry", task: "Oak Tree" },
-   { clue: "Can't beat a good old Bacon Butty!", skill: "Combat", task: "Pig" },
-   { clue: "Can't touch this", skill: "Alchemy", task: "Invincibility Potion" },
-   { clue: "Contains information about things, well, technically this one doesn't, but usually they do", skill: "Crafting", task: "Bestiary" },
-   { clue: "Did I get this one right? It is blue, right?", skill: "Combat", task: "Baby Blue Dragon" },
-   { clue: "Do these even work? Well, only one way to find out", skill: "Alchemy", task: "Luck Potion" },
-   { clue: "Do we really know more about space?", skill: "Fishing", task: "Open Ocean" },
-   { clue: "Don't hit me on the head", skill: "Crafting", task: "Nails" },
-   { clue: "Don't touch the but!", skill: "Cooking", task: "Clownfish" },
-   { clue: "Evergreen Tree, often red in colour", skill: "Forestry", task: "Cedar Tree" },
-   { clue: "Fair enough, I'm partially colourblind, so yes, I got this one a little off.", skill: "Combat", task: "Green Dragon" },
-   { clue: "For Cognium!", skill: "Combat", task: "Crocodile" },
-   { clue: "Give a man a fish, feed him for a day. Teach a man to fish, feed him for a lifetime.", skill: "Crafting", task: "Fishing Net" },
-   { clue: "He can help me practice my bow skills, or just show off with his.", skill: "Combat", task: "Elven Archer" },
-   { clue: "How did I even catch this?", skill: "Cooking", task: "Octopus" },
-   { clue: "How on earth did a trolley get in there?", skill: "Fishing", task: "Small Pond" },
-   { clue: "How on earth does this not make me rich behind my wildest dreams", skill: "Mining", task: "Gold Ore" },
-   { clue: "I aint eating that, looks like it's still on fire!", skill: "Cooking", task: "Dragon Platter" },
-   { clue: "I am found in all kinds of plants and animals across the earth and used as a defence mechanism", skill: "Alchemy", task: "Poison Potion" },
-   { clue: "I am found in the darkness and have many eyes", skill: "Combat", task: "Giant Cave Spider" },
-@@ -219,802 +168,140 @@ const treasureHuntData = [
-   { clue: "I would not recommend giving this guy a cuddle.", skill: "Combat", task: "Fluffy" },
-   { clue: "I’m smart so I wish people would acknowledge that", skill: "Combat", task: "Dummy Queen" },
-   { clue: "If I get caught, he better not give me a job to do", skill: "Thieving", task: "Taskmaster" },
-   { clue: "I'm gonna take this night, and make it…", skill: "Forestry", task: "Evergreen Tree" },
-   { clue: "I'm sorry, but I'm on Team Egg", skill: "Combat", task: "Chicken" },
-   { clue: "In the clouds. I'm the king of the world!", skill: "Discovery", task: "Rocky Peaks" },
-   { clue: "Is this even edible?", skill: "Cooking", task: "Bone Stew" },
-   { clue: "It’s not real, I mean, if it was it would be cool though right?", skill: "Mining", task: "Dragon Ore" },
-   { clue: "Karen, activate insta kill!", skill: "Alchemy", task: "Liquid Death Potion" },
-   { clue: "Named after a place near where I grew up. Quite a few things are actually.", skill: "Fishing", task: "Livingstone Island" },
-   { clue: "Not very comfortable to lie on", skill: "Combat", task: "Lion" },
-   { clue: "Now I know how Midas felt", skill: "Alchemy", task: "Golden Touch Potion" },
-   { clue: "On a diet? Nope, but this makes for some good healing", skill: "Cooking", task: "Fruit Salad" },
-   { clue: "Poor Cow", skill: "Crafting", task: "Leather" },
-   { clue: "Seriously though, who comes up with these names?", skill: "Discovery", task: "Mount Kwaya" },
-   { clue: "Some people say I'm your best friend. Others just see money.", skill: "Mining", task: "Diamond" },
-   { clue: "Think of the amount of Fish I can catch with this beast!", skill: "Crafting", task: "Large Fishing Net" },
-   { clue: "This tree is a living fossil and has fan shaped leaves.", skill: "Forestry", task: "Ginkgo Tree" },
-   { clue: "Up in the clouds. I'm the king of the World!", skill: "Discovery", task: "Rocky Peaks" },
-   { clue: "Wana bet? Discovery Lake Wana Wood", skill: "Combat", task: "Training Dummy" },
-   { clue: "Wouldn't these be like, really heavy?", skill: "Crafting", task: "Iron Boots" },
-   { clue: "Yeah no thanks, I don't like the dark.", skill: "Fishing", task: "Cave" },
-   { clue: "You may need to wrap up warm for this one", skill: "Discovery", task: "Frozen Wasteland" }
- ];
- 
--// =================== ALCHEMY POTIONS DATA ===================
--const alchemyPotions = [
--  { name: "Attack Potion", level: 1, exp: 18, materials: ["Empty Vial","Akomeric","Birds Nest"], amounts: [1,1,1] },
--  { name: "Defence Potion", level: 5, exp: 30, materials: ["Empty Vial","Akomeric","Bones"], amounts: [1,1,5] },
--  { name: "Strength Potion", level: 10, exp: 45, materials: ["Empty Vial","Akomeric","Mushroom"], amounts: [1,1,5] },
--  { name: "Fishing Potion", level: 18, exp: 90, materials: ["Empty Vial","Bloodroot","Fish Hook"], amounts: [1,1,1] },
--  { name: "Health Potion", level: 32, exp: 130, materials: ["Empty Vial","Bloodroot","Gold Feather"], amounts: [1,1,5] },
--  { name: "Energy Potion", level: 38, exp: 160, materials: ["Empty Vial","Bloodroot","Orange"], amounts: [1,1,5] },
--  { name: "Super Attack Potion", level: 40, exp: 200, materials: ["Hyssop","Attack Potion","Pearl"], amounts: [1,1,5] },
--  { name: "Super Fishing Potion", level: 45, exp: 240, materials: ["Hyssop","Fishing Potion","Jawbone"], amounts: [1,1,5] },
--  { name: "Super Defence Potion", level: 48, exp: 300, materials: ["Safflower","Defence Potion","Blue Feather"], amounts: [1,1,10] },
--  { name: "Power Potion", level: 52, exp: 325, materials: ["Attack Potion","Strength Potion","Defence Potion"], amounts: [1,1,10] },
--  { name: "Super Energy Potion", level: 57, exp: 350, materials: ["Safflower","Energy Potion","Compass","Lemon"], amounts: [1,1,1,10] },
--  { name: "Super Strength Potion", level: 62, exp: 380, materials: ["Safflower","Strength Potion","Mushroom"], amounts: [1,1,5] },
--  { name: "Super Health Potion", level: 65, exp: 400, materials: ["Sage Leaf","Health Potion","Ram Skull"], amounts: [1,1,1] },
--  { name: "Luck Potion", level: 70, exp: 450, materials: ["Empty Vial","Sage Leaf","Emerald"], amounts: [1,1,1] },
--  { name: "Extreme Energy Potion", level: 73, exp: 500, materials: ["Sage Leaf","Super Energy Potion","Treasure Map","Eggplant"], amounts: [1,1,1,10] },
--  { name: "Super Power Potion", level: 76, exp: 540, materials: ["Super Attack Potion","Super Strength Potion","Super Defence Potion","Wolfmint"], amounts: [1,1,1,1] },
--  { name: "Extreme Attack Potion", level: 78, exp: 625, materials: ["Wolfmint","Super Attack Potion","Marlin"], amounts: [1,1,5] },
--  { name: "Poison Potion", level: 80, exp: 660, materials: ["Empty Vial","Wolfmint","Dragon Ore"], amounts: [1,1,2] },
--  { name: "Extreme Defence Potion", level: 82, exp: 700, materials: ["Wolfmint","Super Defence Potion","Ray"], amounts: [1,1,5] },
--  { name: "Mining Potion", level: 85, exp: 850, materials: ["Empty Vial","Wolfmint","Ruby"], amounts: [1,1,4] },
--  { name: "Extreme Strength Potion", level: 90, exp: 1000, materials: ["Wolfmint","Super Strength Potion","Shark"], amounts: [1,1,5] },
--  { name: "Extreme Health Potion", level: 94, exp: 1600, materials: ["Vissinel","Super Health Potion","Octopus"], amounts: [1,1,10] },
--  { name: "Thieving Potion", level: 96, exp: 1800, materials: ["Empty Vial","Vissinel","Blue Silk"], amounts: [1,1,2] },
--  { name: "Extreme Power Potion", level: 99, exp: 2000, materials: ["Extreme Attack Potion","Extreme Strength Potion","Extreme Defence Potion","Sunburst Flower"], amounts: [1,1,1,1] },
--  { name: "Insta Kill Potion", level: 101, exp: 2500, materials: ["Empty Vial","Sunburst Flower","Blueprints","Coins"], amounts: [1,1,1,10000] },
--  { name: "Lightning Potion", level: 103, exp: 2700, materials: ["Empty Vial","Sunburst Flower","Golden Scarab"], amounts: [1,1,2] },
--  { name: "Extreme Luck Potion", level: 106, exp: 3000, materials: ["Sunburst Flower","Luck Potion"], amounts: [3,3] },
--  { name: "Rock Skin Potion", level: 109, exp: 3500, materials: ["Empty Vial","Sunburst Flower","Dragon Ore","Dragon Leather","Coins"], amounts: [1,1,5,5,5000] },
--  { name: "Liquid Death Potion", level: 114, exp: 4500, materials: ["Sunburst Flower","Insta Kill Potion","Stone Tablet","Coins"], amounts: [2,2,2,30000] },
--  { name: "Thunderstorm Potion", level: 121, exp: 5500, materials: ["Empty Vial","Ember Fern","Tooth Necklace"], amounts: [1,1,1] },
--  { name: "Cyclone Potion", level: 123, exp: 6500, materials: ["Empty Vial","Ember Fern","Dragon Scimitar"], amounts: [1,1,1] },
--  { name: "Elven Grace Potion", level: 124, exp: 7000, materials: ["Elven Crystal","Stone Tablet","Ember Fern","Coins"], amounts: [1,5,3,50000] },
--  { name: "Ultimate Power Potion", level: 126, exp: 7500, materials: ["Ember Fern","Extreme Power Potion","Dragon Skull"], amounts: [1,1,1] },
--  { name: "Summer Cocktail", level: 127, exp: 7500, materials: ["Liquid Death Potion","Wine","Orange","Lemon","Gold Coin"], amounts: [1,5,3,50000] },
--  { name: "Golden Touch Potion", level: 128, exp: 8000, materials: ["Empty Vial","Pirates Hat","Treasure Map","Ember Fern","Coins"], amounts: [1,1,1,1,25000] },
--  { name: "Avalanche Potion", level: 129, exp: 9000, materials: ["Elven Crystal","Book of Aroon","Ember Fern","Coins"], amounts: [1,1,3,75000] },
--  { name: "Invincibility Potion", level: 130, exp: 10000, materials: ["Rock Skin Potion","Ember Fern","Stone Tablet"], amounts: [1,2,5] },
--  { name: "Divine Protection Potion", level: 130, exp: 50000, materials: ["Gold Coin","Elven Armour Fragment","Kings Armour Fragment","Ember Fern"], amounts: [1500,1,1,5] },
--  { name: "Soul Reaper Potion", level: 130, exp: 100000, materials: ["Liquid Death Potion","Gold Coin","Dark Thread","Stone Tablet"], amounts: [25,7500,50,50] }
--];
--
--// =================== ALCHEMY XP CALCULATOR (renderer) ===================
--function renderAlchemyXP(container) {
--  container.innerHTML = `
--    <div>
--      <label>Select Potion:</label>
--      <select id="alchemyPotionSelect">
--        ${alchemyPotions.map((p,i)=>`<option value="${i}">${p.name} (Lvl ${p.level})</option>`).join('')}
--      </select>
--      <label>Quantity:</label>
--      <input type="number" id="alchemyQuantity" value="1" min="1" style="width:60px;">
--      <button id="alchemyCalcBtn">Calculate XP & Materials</button>
--    </div>
--    <div id="alchemyResults"></div>
--  `;
--
--  container.querySelector('#alchemyCalcBtn').addEventListener('click', () => {
--    const idx = parseInt(container.querySelector('#alchemyPotionSelect').value,10);
--    const qty = parseInt(container.querySelector('#alchemyQuantity').value,10);
--    if (isNaN(qty) || qty < 1) {
--      return alert("Enter a valid quantity.");
--    }
--    const potion = alchemyPotions[idx];
--
--    let html = `<h2>${potion.name} x${qty}</h2>`;
--    html += `<p><strong>Total XP:</strong> ${(potion.exp * qty).toLocaleString()}</p>`;
--    html += `<h3>Required Materials:</h3><ul>`;
--    for (let i = 0; i < potion.materials.length; i++) {
--      html += `<li>${potion.materials[i]}: ${(potion.amounts[i] * qty).toLocaleString()}</li>`;
--    }
--    html += "</ul>";
--    container.querySelector('#alchemyResults').innerHTML = html;
--  });
-+// Replace updated clue wording from your latest list if present.
-+for (const row of treasureHuntData) {
-+  if (row.task === 'Fluffy') row.clue = "Despite the name, I would not recommend giving this guy a cuddle.";
- }
--
--// =================== UTILITY FUNCTIONS ===================
--function calculateTotals(data, start, end) {
--  const required = {};
--  const rewards  = {};
--  for (let lvl = start; lvl <= end; lvl++) {
--    const entry = data[lvl];
--    if (!entry) continue;
--    for (const [itm, amt] of Object.entries(entry.required || {})) {
--      required[itm] = (required[itm] || 0) + amt;
--    }
--    for (const [itm, amt] of Object.entries(entry.rewards || {})) {
--      rewards[itm] = (rewards[itm] || 0) + amt;
--    }
--  }
--  return { required, rewards };
--}
--
--// ----------------- Wishing Well calculators (Beginner & Endgame) -----------------
--const ENDGAME_BIG_WISH_BASE = 15000; // base cost for Endgame (big) wishes
--const ENDGAME_BIG_WISH_MAX_TOTAL = 415; // sum of bigWishMaxLevels from DatabaseManager
--const BEGINNER_BASE = 3;
--const BEGINNER_COST_CAP = 500;
--const BEGINNER_WISH_TOTAL = 1950; // derived from DatabaseManager wishMaxLevels sum
--
--function calculateEndgameFromNextCost(nextCost) {
--  nextCost = Math.max(0, Math.floor(nextCost));
--  const base = ENDGAME_BIG_WISH_BASE;
--  let alreadyMade = 0;
--  if (nextCost >= base) {
--    alreadyMade = Math.floor(nextCost / base) - 1;
--    if (alreadyMade < 0) alreadyMade = 0;
--  }
--  const remainingWishes = Math.max(0, ENDGAME_BIG_WISH_MAX_TOTAL - alreadyMade);
--  const X = remainingWishes;
--  const part1 = X * alreadyMade;
--  const part2 = (X * (X + 1)) / 2;
--  const totalGoldNeeded = base * (part1 + part2);
--  return { alreadyMade, remainingWishes, totalGoldNeeded };
--}
--
--function calculateBeginnerFromNextCost(nextCost) {
--  nextCost = Math.max(0, Math.floor(nextCost));
--  const base = BEGINNER_BASE;
--  const cap = BEGINNER_COST_CAP;
--  let alreadyMade;
--  if (nextCost >= cap) {
--    alreadyMade = Math.ceil(cap / base) - 1;
--  } else {
--    alreadyMade = Math.floor(nextCost / base) - 1;
--    if (alreadyMade < 0) alreadyMade = 0;
--  }
--  const remainingWishes = Math.max(0, BEGINNER_WISH_TOTAL - alreadyMade);
--  const X = remainingWishes;
--  if (X === 0) return { alreadyMade, remainingWishes:0, totalGoldNeeded:0 };
--  const k = Math.max(0, Math.min(X, Math.max(0, Math.ceil(cap / base - alreadyMade))));
--  const partAP = base * (k * alreadyMade + (k * (k + 1)) / 2);
--  const partCap = (X - k) * cap;
--  const totalGoldNeeded = Math.floor(partAP + partCap);
--  return { alreadyMade, remainingWishes, totalGoldNeeded, capReachedAtTerms: k };
--}
--
--function renderBeginnerWishingWell(container) {
--  container.innerHTML = `
--    <h2>Beginner Wishing Well</h2>
--    <p>Enter the current cost the game asks for the next Beginner wish (gold):</p>
--    <input id="bw_input" type="number" value="3" min="0" />
--    <button id="bw_calc">Calculate</button>
--    <div id="bw_result" style="margin-top:10px;"></div>
--  `;
--  container.querySelector('#bw_calc').addEventListener('click', () => {
--    const v = parseInt(container.querySelector('#bw_input').value || 0, 10);
--    const res = calculateBeginnerFromNextCost(v);
--    const html = [
--      `<b>Inferred wishes already made:</b> ${res.alreadyMade.toLocaleString()}`,
--      `<b>Wishes remaining to max:</b> ${res.remainingWishes.toLocaleString()}`,
--      `<b>Total gold required to complete Beginner Well:</b> ${res.totalGoldNeeded.toLocaleString()}`
--    ].join('<br/>');
--    container.querySelector('#bw_result').innerHTML = html;
--  });
-+if (!treasureHuntData.some(x => x.task === 'Evergreen Tree')) {
-+  treasureHuntData.push({ clue: "I'm gonna take this night, and make it…", skill: "Forestry", task: "Evergreen Tree" });
- }
- 
--function renderEndgameWishingWell(container) {
-+function renderBasecamp(container) {
-   container.innerHTML = `
--    <h2>Endgame (Big) Wishing Well</h2>
--    <p>Enter the current cost the game asks for the next Endgame wish (gold):</p>
--    <input id="ew_input" type="number" value="15000" min="0" />
--    <button id="ew_calc">Calculate</button>
--    <div id="ew_result" style="margin-top:10px;"></div>
-+    <h2>Basecamp Calculator</h2>
-+    <p class="muted">Enter your current Basecamp level and your target level. The tool totals all required items and all rewards for upgrades in that range.</p>
-+    <div class="row">
-+      <div>
-+        <label for="currentLevel">Current level</label>
-+        <input id="currentLevel" type="number" min="1" max="75" value="1" />
-+      </div>
-+      <div>
-+        <label for="targetLevel">Target level</label>
-+        <input id="targetLevel" type="number" min="2" max="75" value="2" />
-+      </div>
-+      <div>
-+        <button id="calcBasecamp">Calculate</button>
-+      </div>
-+    </div>
-+    <div id="basecampResults" class="results"></div>
-   `;
--  container.querySelector('#ew_calc').addEventListener('click', () => {
--    const v = parseInt(container.querySelector('#ew_input').value || 0, 10);
--    const res = calculateEndgameFromNextCost(v);
--    const html = [
--      `<b>Inferred big wishes already made:</b> ${res.alreadyMade.toLocaleString()}`,
--      `<b>Wishes remaining to max (total ${ENDGAME_BIG_WISH_MAX_TOTAL}):</b> ${res.remainingWishes.toLocaleString()}`,
--      `<b>Total gold required to complete Endgame Well:</b> ${res.totalGoldNeeded.toLocaleString()}`
--    ].join('<br/>');
--    container.querySelector('#ew_result').innerHTML = html;
--  });
--}
- 
--// =================== ENEMIES (extracted from CombatManager.java content) ===================
--// NOTE: ensure enemyNames, enemyHealth, enemyDefence, enemyDropsRaw arrays exist in this file (they were present in original). Please keep them unchanged.
-+  container.querySelector('#calcBasecamp').addEventListener('click', () => {
-+    const current = Number(container.querySelector('#currentLevel').value);
-+    const target = Number(container.querySelector('#targetLevel').value);
-+    const out = container.querySelector('#basecampResults');
- 
--// =======================================================================
--// ====== SIGNIFICANT CHANGES START HERE: ComputeDamage & AttackSpeed ======
--// =======================================================================
--
--// Utility: read equipment selected by user
--function readSelectedEquipment(slotElems) {
--  const equip = {};
--  for (const id in slotElems) {
--    equip[id] = slotElems[id].value || '';
--  }
--  return equip;
--}
-+    if (!Number.isInteger(current) || !Number.isInteger(target) || current < 1 || target > 75 || current >= target) {
-+      out.innerHTML = '<p>Please enter a valid range between 1 and 75, with target greater than current.</p>';
-+      return;
-+    }
- 
--// Helper: compute aggregated crits from itemsList if provided, otherwise heuristics from item name
--function getCritAndBonusesFromItems(itemsList, equipNames) {
--  const result = {
--    bowCrit: 0,
--    armourCrit: 0,
--    potionCrit: 0,
--    bowAccuracy: 70,
--    bowDamage: 0,
--    arrowDamage: 0,
--    hasQuiverAndKynosian: false,
--    hasEggArrows: false,
--    hasEggstravagantBow: false,
--    hasBalloonBow: false,
--    hasCandleArrows: false,
--    hasTeddyBear: false,
--    mysticSet: false,
--    swordOfFeroxi: false,
--    swordOfFeroxiE: false,
--    ringOfSoulsE: false,
--    ringOfSouls: false,
--    larry: false
--  };
-+    const totalsRequired = {};
-+    const totalsRewards = {};
-+    const perLevelRows = [];
- 
--  if (Array.isArray(itemsList) && itemsList.length) {
--    for (const slotName of Object.keys(equipNames)) {
--      const name = equipNames[slotName];
--      if (!name) continue;
--      const it = itemsList.find(x => x.name === name);
--      const lname = (name || '').toLowerCase();
--      if (it) {
--        if (it.attack) result.bowDamage += it.attack;
--        if (it.value && !result.bowDamage) result.bowDamage += it.value;
--        if (it.accuracy) result.bowAccuracy = it.accuracy;
--        if (it.crit) result.bowCrit += it.crit;
--        if (it.strength) result.arrowDamage += it.strength;
--      } else {
--        if (lname.includes('kynosian')) {
--          if (lname.includes('arrows')) result.hasQuiverAndKynosian = true;
--          if (lname.includes('quiver')) result.hasQuiverAndKynosian = true;
--        }
-+    for (let lvl = current; lvl < target; lvl++) {
-+      const row = basecampData[lvl];
-+      if (!row) continue;
-+      for (const [name, amount] of Object.entries(row.required || {})) {
-+        totalsRequired[name] = (totalsRequired[name] || 0) + amount;
-       }
--
--      if (lname.includes('egg arrows')) result.hasEggArrows = true;
--      if (lname.includes('eggstravagant')) result.hasEggstravagantBow = true;
--      if (lname.includes('balloon bow')) result.hasBalloonBow = true;
--      if (lname.includes('candle arrows')) result.hasCandleArrows = true;
--      if (lname.includes('teddy bear')) result.hasTeddyBear = true;
--      if (lname.includes('mystic') && (lname.includes('hat') || lname.includes('gloves') || lname.includes('top') || lname.includes('boots') || lname.includes('legs'))) {
--        result.mysticSet = result.mysticSet || false;
-+      for (const [name, amount] of Object.entries(row.rewards || {})) {
-+        totalsRewards[name] = (totalsRewards[name] || 0) + amount;
-       }
--      if (lname.includes('sword of feroxi (e)')) result.swordOfFeroxiE = true;
--      if (lname.includes('sword of feroxi')) result.swordOfFeroxi = result.swordOfFeroxi || lname.includes('feroxi') && !lname.includes('(e)');
--      if (lname.includes('ring of souls (e)')) result.ringOfSoulsE = true;
--      if (lname.includes('ring of souls')) result.ringOfSouls = result.ringOfSouls || lname.includes('ring of souls') && !lname.includes('(e)');
--      if (lname.includes('larry')) result.larry = true;
--    }
--  } else {
--    for (const slotName of Object.keys(equipNames)) {
--      const name = (equipNames[slotName] || '').toLowerCase();
--      if (!name) continue;
--      if (name.includes('kynosian') && (name.includes('arrow') || name.includes('quiver'))) result.hasQuiverAndKynosian = true;
--      if (name.includes('egg arrows')) result.hasEggArrows = true;
--      if (name.includes('eggstravagant')) result.hasEggstravagantBow = true;
--      if (name.includes('balloon bow')) result.hasBalloonBow = true;
--      if (name.includes('candle arrows')) result.hasCandleArrows = true;
--      if (name.includes('teddy bear')) result.hasTeddyBear = true;
--      if (name.includes('mystic')) result.mysticSet = true;
--      if (name.includes('sword of feroxi (e)')) result.swordOfFeroxiE = true;
--      if (name.includes('sword of feroxi')) result.swordOfFeroxi = result.swordOfFeroxi || name.includes('feroxi') && !name.includes('(e)');
--      if (name.includes('ring of souls (e)')) result.ringOfSoulsE = true;
--      if (name.includes('ring of souls')) result.ringOfSouls = result.ringOfSouls || name.includes('ring of souls') && !name.includes('(e)');
--      if (name.includes('larry')) result.larry = true;
--    }
--  }
--
--  return result;
--}
--
--function computeDamage({
--  attackLevel, strengthLevel, defenceLevel,
--  equipAttack, equipStrength, equipDefence,
--  enemyIndex, attackStyle, bowDamage = 0, arrowDamage = 0, bowAccuracy = 70, bowCritChance = 0, armourCritChance = 0, potionCritChance = 0,
--  basecampLevel, combatBoostPercent=0,
--  equipNames = {}, itemsList = []
--}) {
--  const effAtk = (attackLevel || 0) + (equipAttack || 0);
--  const effStr = (strengthLevel || 0) + (equipStrength || 0);
--  const effDef = (defenceLevel || 0) + (equipDefence || 0);
--
--  const enemyHP = (enemyHealth && enemyHealth[enemyIndex]) ? enemyHealth[enemyIndex] : 1;
--  const enemyDEF = (enemyDefence && enemyDefence[enemyIndex]) ? enemyDefence[enemyIndex] : 0;
--
--  const rawBase = 0.4 * effAtk + 0.8 * effStr;
--  const mitigation = Math.max(0.05, 1 - (enemyDEF / (enemyDEF + 5000)));
--  const equipFlags = getCritAndBonusesFromItems(itemsList, equipNames);
--  let damage = 0;
--
--  if (attackStyle === 'Archery') {
--    const archRaw = (bowDamage || 0) + (arrowDamage || 0) + (effAtk * 0.2) + (effStr * 0.1);
--    let avgHit = archRaw * ( (bowAccuracy || 70) / 100 );
--    avgHit = avgHit * mitigation;
--    const critChance = (bowCritChance || 0) + (armourCritanceFromEquip(equipNames, itemsList) || armourCritChance || 0) + (potionCritChance || 0);
--    const expectedCritMultiplier = 1 + Math.min(critChance, 100) / 100.0 * 0.25;
--    damage = avgHit * expectedCritMultiplier;
--    if (equipFlags.hasEggstravagantBow) {
--      damage *= 2;
-+      const meta = basecampMeta[lvl] || { benefit: '—', skills: ['—'] };
-+      perLevelRows.push({ level:lvl, benefit: meta.benefit, skills: meta.skills, required: row.required || {}, rewards: row.rewards || {} });
-     }
--    if (equipFlags.hasEggArrows) damage *= (1 + 0.05);
--    if (equipFlags.hasBalloonBow) damage *= (1 + 0.05);
--    if (equipFlags.hasCandleArrows) damage *= (1 + 0.02);
--    if (equipFlags.hasQuiverAndKynosian) damage *= 1.20;
--    if (equipFlags.hasTeddyBear) damage *= (1 + 0.05);
--    if (equipFlags.mysticSet) damage *= 1.20;
- 
--  } else {
--    damage = rawBase * mitigation;
--    const weakness = getEnemyWeakness(enemyIndex);
--    if ((weakness === 'Melee' && attackStyle !== 'Archery') || (weakness === 'Archery' && attackStyle === 'Archery')) {
--      damage *= 1.10;
-+    const listHtml = (obj) => Object.entries(obj)
-+      .sort((a,b) => a[0].localeCompare(b[0]))
-+      .map(([k,v]) => `<li>${k}: ${Number(v).toLocaleString()}</li>`).join('') || '<li>None</li>';
-+
-+    let html = `<h3>Totals for levels ${current} → ${target}</h3>`;
-+    html += `<div class="row"><div><h4>Required Items</h4><ul>${listHtml(totalsRequired)}</ul></div><div><h4>Rewards</h4><ul>${listHtml(totalsRewards)}</ul></div></div>`;
-+    html += `<h4>Upgrade Breakdown</h4><table><thead><tr><th>Upgrade</th><th>Benefit</th><th>Skills</th><th>Items Needed</th><th>Rewards</th></tr></thead><tbody>`;
-+    for (const r of perLevelRows) {
-+      const req = Object.entries(r.required).map(([k,v]) => `${Number(v).toLocaleString()}x ${k}`).join('<br>') || '—';
-+      const rew = Object.entries(r.rewards).map(([k,v]) => `${Number(v).toLocaleString()}x ${k}`).join('<br>') || '—';
-+      html += `<tr><td>${r.level} → ${r.level+1}</td><td>${r.benefit}</td><td>${r.skills.join('<br>')}</td><td>${req}</td><td>${rew}</td></tr>`;
-     }
--    if (equipContains(equipNames, 'Sword of Feroxi (E)')) damage *= 1.25;
--    if (equipContains(equipNames, 'Sword of Feroxi')) damage *= 1.10;
--    if (equipFlags.mysticSet) damage *= 1.20;
--    if (equipFlags.hasTeddyBear) damage *= (1 + 0.05);
--  }
--
--  damage = damage * (1 + (combatBoostPercent || 0) / 100);
--  const damagePerHit = Math.max(1, Math.floor(damage));
--  const attackSpeed = computeAttackSpeed({
--    attackLevel,
--    attackStyle,
--    basecampLevel,
--    equipNames,
--    itemsList
-+    html += '</tbody></table>';
-+    out.innerHTML = html;
-   });
--  const hitsToKill = Math.ceil(enemyHP / damagePerHit);
--  const timeToKillMs = hitsToKill * attackSpeed;
--  const dps = (damagePerHit * 1000) / attackSpeed;
--
--  return {
--    damagePerHit,
--    attackSpeed,
--    hitsToKill,
--    timeToKillMs,
--    dps,
--    enemyHP,
--    enemyDEF
--  };
--}
--
--function equipContains(equipNames, needle) {
--  for (const k of Object.keys(equipNames)) {
--    if (!equipNames[k]) continue;
--    if ((equipNames[k] || '').toLowerCase().includes(needle.toLowerCase())) return true;
--  }
--  return false;
- }
- 
--function armourCritanceFromEquip(equipNames, itemsList) {
--  let sum = 0;
--  for (const k of Object.keys(equipNames)) {
--    const n = (equipNames[k] || '').toLowerCase();
--    if (!n) continue;
--    if (n.includes('kynosian') || n.includes('kynosian boots') || n.includes('kynosian gloves')) sum += 2;
--    if (n.includes('kynosian hat') || n.includes('kynosian top')) sum += 3;
--    if (n.includes('kynosian') && n.includes('(e)')) sum += 5;
--  }
--  return sum;
--}
-+function renderTreasure(container) {
-+  container.innerHTML = `
-+    <h2>Treasure Hunt Answers</h2>
-+    <p class="muted">Search by clue text, skill, or task. Easy future updates: add/edit rows in <code>treasureHuntData</code>.</p>
-+    <label for="treasureSearch">Search</label>
-+    <input id="treasureSearch" type="text" placeholder="Type clue, skill, or task..." style="width: min(700px, 100%);"/>
-+    <div id="treasureResults" class="results"></div>
-+  `;
- 
--function computeAttackSpeed({ attackLevel = 1, attackStyle = 'Attack', basecampLevel = 1, equipNames = {}, itemsList = [] }) {
--  let bowEquipped = findEquippedBow(equipNames, itemsList);
--  let baseAttackSpeed = 2000;
--  if (attackStyle === 'Archery' && bowEquipped) {
--    const bowItem = Array.isArray(itemsList) ? itemsList.find(it => it.name === bowEquipped) : null;
--    if (bowItem && bowItem.speed) {
--      baseAttackSpeed = bowItem.speed;
--    } else {
--      baseAttackSpeed = heuristicBowSpeed(bowEquipped);
--    }
--  } else {
--    baseAttackSpeed = 2000 - Math.max(0, attackLevel) * 5;
--  }
--  if (equipContains(equipNames, 'Ring of Souls (E)') || equipContains(equipNames, 'Ring of Souls')) {
--    baseAttackSpeed = Math.floor(baseAttackSpeed / 2);
--  }
--  if ((basecampLevel || 0) >= 60) {
--    baseAttackSpeed = Math.floor(baseAttackSpeed - baseAttackSpeed / 5);
--  }
--  if (equipContains(equipNames, 'Larry')) {
--    baseAttackSpeed = baseAttackSpeed - 100;
--  }
--  baseAttackSpeed = Math.max(100, Math.min(4000, baseAttackSpeed));
--  return baseAttackSpeed;
--}
-+  const search = container.querySelector('#treasureSearch');
-+  const results = container.querySelector('#treasureResults');
- 
--function findEquippedBow(equipNames, itemsList) {
--  for (const k of Object.keys(equipNames)) {
--    const n = (equipNames[k] || '').toLowerCase();
--    if (!n) continue;
--    if (n.includes('bow') || n.includes('longbow') || n.includes('redwood bow') || n.includes('elven bow')) {
--      return equipNames[k];
-+  function draw() {
-+    const q = search.value.trim().toLowerCase();
-+    const rows = treasureHuntData.filter(r => !q || r.clue.toLowerCase().includes(q) || r.skill.toLowerCase().includes(q) || r.task.toLowerCase().includes(q));
-+    let html = `<p><b>${rows.length}</b> result(s)</p>`;
-+    html += '<table><thead><tr><th>Clue</th><th>Skill</th><th>Task</th></tr></thead><tbody>';
-+    for (const r of rows) {
-+      html += `<tr><td>${r.clue}</td><td>${r.skill}</td><td>${r.task}</td></tr>`;
-     }
-+    if (!rows.length) html += '<tr><td colspan="3">No results found.</td></tr>';
-+    html += '</tbody></table>';
-+    results.innerHTML = html;
-   }
--  if (Array.isArray(itemsList) && itemsList.length) {
--    for (const it of itemsList) {
--      const inSelected = Object.values(equipNames).some(v => v === it.name);
--      if (inSelected && it.type && (it.type.toLowerCase().includes('bow') || (it.name && it.name.toLowerCase().includes('bow')))) return it.name;
--    }
--  }
--  return '';
--}
- 
--function heuristicBowSpeed(bowName) {
--  const lname = (bowName || '').toLowerCase();
--  if (lname.includes('evergreen') || lname.includes('stone')) return 2800;
--  if (lname.includes('oak')) return 2650;
--  if (lname.includes('maple')) return 2500;
--  if (lname.includes('fir')) return 2350;
--  if (lname.includes('redwood')) return 2200;
--  if (lname.includes('cedar')) return 2050;
--  if (lname.includes('chestnut')) return 1900;
--  if (lname.includes('ginkgo')) return 1750;
--  if (lname.includes('elven')) return 1300;
--  if (lname.includes('kynosian')) return 1000;
--  return 2000;
-+  search.addEventListener('input', draw);
-+  draw();
- }
- 
--// =================== Remainder: Combat Calculator UI integration ===================
--
--const menus = {
--  basecamp: { name: "Basecamp Calculator (Levels 1–75)", render: function(container) { /* unchanged */ container.innerHTML = ' ' } },
--  treasureHunt: { name: "Treasure Hunt Clues", render: function(container) { /* unchanged */ container.innerHTML = ' ' } },
--  alchemyXP: { name: "Alchemy XP Calculator", render: renderAlchemyXP },
--  beginnerWell: { name: "Beginner Wishing Well", render: renderBeginnerWishingWell },
--  endgameWell: { name: "Endgame Wishing Well", render: renderEndgameWishingWell },
--  combatCalc: {
--    name: "Combat Calculator",
--    render: function(container) {
--      container.innerHTML = `
--        <h2>Combat Calculator</h2>
--        <p><em>Note:</em> This calculator aims to closely match CombatManager.java logic but remains an approximation.</p>
--
--        <div class="grid">
--          <div>
--            <h3>1) Basic Inputs</h3>
--            <label>Attack Level: <input id="cc_attack" type="number" value="1" min="1" class="small"></label>
--            <label>Strength Level: <input id="cc_strength" type="number" value="1" min="1" class="small"></label>
--            <label>Defence Level: <input id="cc_defence" type="number" value="1" min="1" class="small"></label>
--            <label>Basecamp Level: <select id="cc_basecamp">${[...Array(75)].map((_,i)=>`<option value="${i+1}">${i+1}</option>`).join('')}</select></label>
--            <label>Combat Boost (%) : <input id="cc_combatboost" type="number" value="0" min="0" class="small"></label>
--            <label>Beginner Well Next Cost (gold, optional): <input id="cc_bw_cost" type="number" value="" placeholder="e.g. 3"></label>
--            <label>Endgame Well Next Cost (gold, optional): <input id="cc_ew_cost" type="number" value="" placeholder="e.g. 15000"></label>
--          </div>
--
--          <div>
--            <h3>2) Equipment slots (auto-populated from items.json if available)</h3>
--            <div class="slot-select"><label>Helm<select id="slot_helm"></select></label></div>
--            <div class="slot-select"><label>Top<select id="slot_top"></select></label></div>
--            <div class="slot-select"><label>Pants/Legs<select id="slot_legs"></select></label></div>
--            <div class="slot-select"><label>Boots<select id="slot_boots"></select></label></div>
--            <div class="slot-select"><label>Weapon<select id="slot_weapon"></select></label></div>
--            <div class="slot-select"><label>Shield<select id="slot_shield"></select></label></div>
--            <div class="slot-select"><label>Ring<select id="slot_ring"></select></label></div>
--            <div class="slot-select"><label>Cape<select id="slot_cape"></select></label></div>
--            <div class="slot-select"><label>Necklace<select id="slot_necklace"></select></label></div>
--            <div class="slot-select"><label>Pet<select id="slot_pet"></select></label></div>
--            <div class="slot-select"><label>Blessing / Special<select id="slot_blessing"></select></label></div>
--          </div>
--
--          <div>
--            <h3>3) Combat / Scenario</h3>
--            <label>Attack style: 
--              <select id="cc_attackstyle">
--                <option value="Melee">Melee</option>
--                <option value="Archery">Archery</option>
--              </select>
--            </label>
--            <label>Pick enemy: <select id="cc_enemy" class="wide"></select></label>
--            <label>Slayer task (optional): <input id="cc_slayer" placeholder="e.g. Elven Archer"></label>
--            <label>Fight duration (D:H:M:S) <input id="cc_duration" value="0:0:0:30" placeholder="days:hours:minutes:seconds"></label>
--            <label>Manual override attack speed ms (optional): <input id="cc_attackSpeedOverride" placeholder="ms per hit"></label>
--            <div style="margin-top:8px;">
--              <button id="cc_load_items">Load items.json (if present)</button>
--              <button id="cc_calculate">Calculate Combat</button>
--            </div>
--            <div id="cc_note" style="margin-top:6px;color:#cfcfcf;font-size:13px;">Items will be populated if an <code>items.json</code> file exists in same folder. Otherwise you can manually type skill levels and choose "—none—" equipment.</div>
--          </div>
--        </div>
--
--        <div id="cc_results" class="result-block"></div>
--      `;
--
--      const enemySelect = container.querySelector('#cc_enemy');
--      if (typeof enemyNames !== 'undefined') enemyNames.forEach((n,i)=> {
--        const opt = document.createElement('option');
--        opt.value = i;
--        opt.textContent = `${n} ${ (typeof enemyHealth!=='undefined' && enemyHealth[i]) ? `(HP: ${enemyHealth[i].toLocaleString()}, DEF: ${enemyDefence[i].toLocaleString()})` : ''}`;
--        enemySelect.appendChild(opt);
--      });
--
--      const slotIds = ['helm','top','legs','boots','weapon','shield','ring','cape','necklace','pet','blessing'];
--      const slotElems = {};
--      slotIds.forEach(id => {
--        slotElems[id] = container.querySelector(`#slot_${id}`);
--        const noneOpt = document.createElement('option');
--        noneOpt.value = '';
--        noneOpt.textContent = '— none —';
--        slotElems[id].appendChild(noneOpt);
--      });
--
--      let itemsList = [];
--
--      function populateEquipmentSelectors() {
--        if (!itemsList || !itemsList.length) return;
--        slotIds.forEach(id => {
--          const sel = slotElems[id];
--          while (sel.children.length > 1) sel.removeChild(sel.lastChild);
--        });
--        itemsList.forEach(item => {
--          const type = (item.type || '').toLowerCase();
--          const candidates = [];
--          if (type.startsWith('equipment-helm') || type.includes('helm')) candidates.push('helm');
--          if (type.startsWith('equipment-top') || type.includes('top') || item.name.toLowerCase().includes('top')) candidates.push('top');
--          if (type.startsWith('equipment-legs') || type.includes('legs') || item.name.toLowerCase().includes('legs') || item.name.toLowerCase().includes('greaves')) candidates.push('legs');
--          if (type.startsWith('equipment-greaves') || type.includes('greaves') || item.name.toLowerCase().includes('greaves')) candidates.push('legs');
--          if (type.startsWith('equipment-boots') || type.includes('boots')) candidates.push('boots');
--          if (type.startsWith('equipment-weapon') || type.includes('weapon')) candidates.push('weapon');
--          if (type.startsWith('equipment-cape') || type.includes('cape')) candidates.push('cape');
--          if (type.includes('ring')) candidates.push('ring');
--          if (type.includes('pet') || item.name.toLowerCase().includes('pet') || item.name.match(/^(adam|saul|marsh|cassie)/i)) candidates.push('pet');
--          if (type.includes('shield')) candidates.push('shield');
--          if (type.includes('necklace') || type.includes('neck')) candidates.push('necklace');
--          if (type.toLowerCase().includes('potion') || item.name.toLowerCase().includes('ticket') || item.name.toLowerCase().includes('divine') ) candidates.push('blessing');
--
--          const lname = item.name.toLowerCase();
--          if (lname.includes('ring')) candidates.push('ring');
--          if (lname.includes('bow') || lname.includes('sword') || lname.includes('scimitar') || lname.includes('axe') || lname.includes('staff') || lname.includes('spear') ) candidates.push('weapon');
--          if (lname.includes('shield')) candidates.push('shield');
--          if (lname.includes('cape')) candidates.push('cape');
--          if (lname.includes('pet') || lname.includes('saul') || lname.includes('adam')) candidates.push('pet');
--
--          const uniq = [...new Set(candidates)];
--          uniq.forEach(slot => {
--            const opt = document.createElement('option');
--            opt.value = item.name;
--            opt.textContent = `${item.name} ${item.rarity ? '('+item.rarity+')' : ''} ${item.attack?('ATK+'+item.attack):''}${item.strength?(' STR+'+item.strength):''}${item.defence?(' DEF+'+item.defence):''}`;
--            slotElems[slot].appendChild(opt);
--          });
--        });
--      }
--
--      async function tryLoadItemsJson() {
--        try {
--          const resp = await fetch('items.json', {cache:'no-store'});
--          if (!resp.ok) throw new Error('items.json fetch failed');
--          const data = await resp.json();
--          itemsList = data;
--          populateEquipmentSelectors();
--          container.querySelector('#cc_note').textContent = 'Loaded items.json and populated equipment lists.';
--        } catch (err) {
--          container.querySelector('#cc_note').textContent = 'items.json not found or failed to load. Equipment lists will be empty — you can still calculate using manual skill inputs.';
--        }
--      }
--
--      container.querySelector('#cc_load_items').addEventListener('click', tryLoadItemsJson);
--      tryLoadItemsJson();
--
--      function parseDuration(str) {
--        try {
--          const parts = str.split(':').map(p => parseInt(p.trim()||'0',10));
--          if (parts.length !== 4) return null;
--          const [d,h,m,s] = parts;
--          return (((((d*24)+h)*60)+m)*60 + s) * 1000;
--        } catch(e) {
--          return null;
--        }
--      }
--
--      container.querySelector('#cc_calculate').addEventListener('click', () => {
--        const attackLevel = parseInt(container.querySelector('#cc_attack').value,10) || 1;
--        const strengthLevel = parseInt(container.querySelector('#cc_strength').value,10) || 1;
--        const defenceLevel = parseInt(container.querySelector('#cc_defence').value,10) || 1;
--        const basecampLevel = parseInt(container.querySelector('#cc_basecamp').value,10) || 1;
--        const combatBoostPercent = parseFloat(container.querySelector('#cc_combatboost').value) || 0;
--        const attackStyle = container.querySelector('#cc_attackstyle').value || 'Melee';
--        const enemyIndex = parseInt(container.querySelector('#cc_enemy').value,10);
--        const durationMs = parseDuration(container.querySelector('#cc_duration').value) || 30000;
--        const manualAttackSpeed = parseInt(container.querySelector('#cc_attackSpeedOverride').value,10) || null;
--
--        function getItemByName(name) {
--          if (!name) return null;
--          if (!itemsList || !itemsList.length) return null;
--          return itemsList.find(it => it.name === name) || null;
--        }
--        const equipNames = {};
--        slotIds.forEach(id => {
--          equipNames[id] = container.querySelector(`#slot_${id}`).value || '';
--        });
--
--        let bowDamage = 0, arrowDamage = 0, bowAccuracy = 70, bowCrit = 0, armourCrit = 0, potionCrit = 0;
--        if (itemsList && itemsList.length) {
--          const bowName = findEquippedBow(equipNames, itemsList);
--          if (bowName) {
--            const bow = getItemByName(bowName);
--            if (bow) {
--              bowDamage = bow.attack || bow.value || 0;
--              bowAccuracy = bow.accuracy || bowAccuracy;
--              bowCrit = bow.crit || 0;
--            }
--          }
--          const arrowName = Object.values(equipNames).find(n => (n||'').toLowerCase().includes('arrow') && !(n||'').toLowerCase().includes('quiver'));
--          if (arrowName) {
--            const arr = getItemByName(arrowName);
--            if (arr) arrowDamage = arr.attack || arr.value || 0;
--          }
--          armourCrit = armourCritanceFromEquip(equipNames, itemsList);
--        } else {
--          for (const k of Object.keys(equipNames)) {
--            const name = (equipNames[k] || '').toLowerCase();
--            if (!name) continue;
--            if (name.includes('bow')) {
--              bowDamage = heuristicBowBaseDamage(name);
--              if (name.includes('evergreen')) bowAccuracy = 30;
--              if (name.includes('kynosian')) bowAccuracy = 100;
--              if (name.includes('elven')) bowAccuracy = 95;
--            }
--            if (name.includes('arrow')) {
--              arrowDamage = heuristicArrowDamage(name);
--            }
--          }
--        }
--
--        potionCrit = 0;
--
--        const dmgResult = computeDamage({
--          attackLevel, strengthLevel, defenceLevel,
--          equipAttack: 0, equipStrength: 0, equipDefence: 0,
--          enemyIndex,
--          attackStyle,
--          bowDamage, arrowDamage, bowAccuracy,
--          bowCritChance: bowCrit,
--          armourCritChance: armourCrit,
--          potionCritChance: potionCrit,
--          basecampLevel,
--          combatBoostPercent,
--          equipNames,
--          itemsList
--        });
--
--        if (manualAttackSpeed && manualAttackSpeed > 0) {
--          const hitsToKill = Math.ceil(dmgResult.enemyHP / dmgResult.damagePerHit);
--          const timeToKillMs = hitsToKill * manualAttackSpeed;
--          const dps = (dmgResult.damagePerHit * 1000) / manualAttackSpeed;
--          dmgResult.attackSpeed = manualAttackSpeed;
--          dmgResult.hitsToKill = hitsToKill;
--          dmgResult.timeToKillMs = timeToKillMs;
--          dmgResult.dps = dps;
--        }
--
--        const kills = (dmgResult.timeToKillMs > 0) ? Math.floor(durationMs / dmgResult.timeToKillMs) : 0;
--
--        const dropsSummary = expectedDropsForEnemy(enemyIndex);
--        const totalsDrops = {};
--        for (const [k,v] of Object.entries(dropsSummary)) {
--          totalsDrops[k] = v * kills;
--        }
--
--        let secretRareEstimate = 0;
--        if ((enemyDropsRaw[enemyIndex] || '').toLowerCase().includes('secret rare')) {
--          secretRareEstimate = 0.001 * kills;
--        }
--
--        const bwCost = parseInt(container.querySelector('#cc_bw_cost').value,10) || null;
--        const ewCost = parseInt(container.querySelector('#cc_ew_cost').value,10) || null;
--        let bwHtml = '', ewHtml = '';
--        if (bwCost !== null && bwCost !== 0) {
--          const r = calculateBeginnerFromNextCost(bwCost);
--          bwHtml = `<div><b>Beginner Well - inferred already made:</b> ${r.alreadyMade.toLocaleString()}, remaining wishes: ${r.remainingWishes.toLocaleString()}, total gold required: ${r.totalGoldNeeded.toLocaleString()}</div>`;
--        }
--        if (ewCost !== null && ewCost !== 0) {
--          const r = calculateEndgameFromNextCost(ewCost);
--          ewHtml = `<div><b>Endgame Well - inferred big wishes already made:</b> ${r.alreadyMade.toLocaleString()}, remaining big wishes: ${r.remainingWishes.toLocaleString()}, total gold required: ${r.totalGoldNeeded.toLocaleString()}</div>`;
--        }
--
--        const resultsEl = container.querySelector('#cc_results');
--        let html = `<h3>Combat Results vs ${enemyNames[enemyIndex]}</h3>`;
--        html += `<div><strong>Damage per hit (avg):</strong> ${dmgResult.damagePerHit.toLocaleString()}</div>`;
--        html += `<div><strong>Attack speed (ms per hit):</strong> ${dmgResult.attackSpeed.toLocaleString()} ms</div>`;
--        html += `<div><strong>Hits to kill one:</strong> ${dmgResult.hitsToKill.toLocaleString()}</div>`;
--        html += `<div><strong>Time to kill one:</strong> ${(dmgResult.timeToKillMs/1000).toFixed(2)}s</div>`;
--        html += `<div><strong>Average DPS:</strong> ${dmgResult.dps.toFixed(2)}</div>`;
--        html += `<hr>`;
--        html += `<div><strong>Planned fight duration:</strong> ${ (durationMs/1000).toLocaleString() }s  &nbsp; (<em>${kills}</em> kills possible)</div>`;
--        html += `<h4>Expected drops (per kill / total over ${kills} kills)</h4>`;
--        html += `<ul>`;
--        for (const [name,expAmt] of Object.entries(dropsSummary)) {
--          const total = (totalsDrops[name] || 0);
--          html += `<li>${name}: avg ${expAmt.toLocaleString()} / kill  → total ≈ ${total.toLocaleString()}</li>`;
--        }
--        if (Object.keys(dropsSummary).length === 0) {
--          html += `<li>No parsed drops for this enemy (raw data missing)</li>`;
--        }
--        html += `</ul>`;
--        if (secretRareEstimate > 0) {
--          html += `<div><strong>Secret Rare expected count (estimated):</strong> ${secretRareEstimate.toFixed(3)} (expected)</div>`;
--        }
--        html += `<hr>`;
--        html += `<div><strong>Equipment selected:</strong><pre>${JSON.stringify(equipNames,null,2)}</pre></div>`;
--        html += bwHtml + ewHtml;
--
--        resultsEl.innerHTML = html;
--      });
--
--    }
--  }
--};
--
--// =================== INITIALIZATION ===================
- const menuSelect = document.getElementById('menuSelect');
- const menuContainer = document.getElementById('menuContainer');
-+const renderers = { basecamp: renderBasecamp, treasure: renderTreasure };
- 
--for (const key in menus) {
--  const opt = document.createElement('option');
--  opt.value = key;
--  opt.textContent = menus[key].name;
--  menuSelect.appendChild(opt);
--}
--
--if (menuSelect.options.length > 0) {
--  menuSelect.selectedIndex = 0;
--  menus[menuSelect.value].render(menuContainer);
--}
--
--menuSelect.addEventListener('change', () => {
--  menus[menuSelect.value].render(menuContainer);
--});
--
--function heuristicBowBaseDamage(name) {
--  const lname = (name||'').toLowerCase();
--  if (lname.includes('evergreen')) return 0;
--  if (lname.includes('oak')) return 0;
--  if (lname.includes('maple')) return 0;
--  if (lname.includes('redwood')) return 10;
--  if (lname.includes('elven')) return 2500;
--  if (lname.includes('kynosian')) return 4000;
--  return 0;
--}
--function heuristicArrowDamage(name) {
--  const lname = (name||'').toLowerCase();
--  if (lname.includes('stone')) return 4;
--  if (lname.includes('copper')) return 10;
--  if (lname.includes('iron')) return 20;
--  if (lname.includes('dragon')) return 100;
--  return 0;
--}
--function getEnemyWeakness(index) {
--  return (typeof enemyWeakness !== 'undefined' && enemyWeakness[index]) ? enemyWeakness[index] : '';
--}
--function expectedDropsForEnemy(index) {
--  const raw = enemyDropsRaw[index] || '';
--  const parts = raw.split('/');
--  const parsed = [];
--  const summary = {};
--  parts.forEach(p => {
--    const s = p.split(',').map(x=>x.trim());
--    if (s.length >= 4) {
--      const name = s[0];
--      const min = parseInt(s[1],10) || 1;
--      const max = parseInt(s[2],10) || min;
--      const expected = (min + max) / 2;
--      summary[name] = (summary[name] || 0) + expected;
--    } else if (s.length === 1 && s[0]) {
--      summary[s[0]] = (summary[s[0]] || 0) + 1;
--    }
--  });
--  return summary;
-+function renderActive() {
-+  const fn = renderers[menuSelect.value] || renderBasecamp;
-+  fn(menuContainer);
- }
- 
-+menuSelect.addEventListener('change', renderActive);
-+renderActive();
- </script>
--
- </body>
- </html>
- 
-EOF
-)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Basecamp & Treasure Tool</title>
+
+<style>
+body{
+    background:#000;
+    color:#fff;
+    font-family:Arial;
+    margin:0;
+}
+
+.header{
+    background:#111;
+    padding:15px;
+    font-size:24px;
+    font-weight:bold;
+}
+
+.tabs{
+    display:flex;
+    background:#111;
+}
+
+.tab{
+    padding:10px 20px;
+    cursor:pointer;
+}
+
+.tab.active{
+    color:cyan;
+    border-bottom:2px solid cyan;
+}
+
+.container{
+    padding:20px;
+}
+
+input{
+    background:#111;
+    color:white;
+    border:1px solid #333;
+    padding:8px;
+    margin:5px;
+}
+
+button{
+    background:cyan;
+    border:none;
+    padding:10px;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+.result{
+    margin-top:20px;
+    background:#111;
+    padding:15px;
+}
+
+table{
+    border-collapse:collapse;
+    width:100%;
+}
+
+td,th{
+    border:1px solid #333;
+    padding:6px;
+}
+
+</style>
+</head>
+<body>
+
+<div class="header">Basecamp & Treasure Tool</div>
+
+<div class="tabs">
+<div class="tab active" onclick="switchTab('basecamp', this)">Basecamp Calculator</div>
+<div class="tab" onclick="switchTab('treasure', this)">Treasure Hunt</div>
+</div>
+
+<div class="container">
+
+<div id="basecamp">
+
+Current Level
+<input type="number" id="currentLevel" value="1" min="1" max="75">
+
+Target Level
+<input type="number" id="targetLevel" value="75" min="1" max="75">
+
+<button onclick="calculate()">Calculate</button>
+
+<div id="output" class="result"></div>
+
+</div>
+
+
+<div id="treasure" style="display:none">
+
+Search
+<input type="text" id="searchBox" oninput="searchTreasure()">
+
+<div id="treasureOutput" class="result"></div>
+
+</div>
+
+</div>
+
+<script>
+
+/*
+==========================
+BASECAMP DATA FULL 1–75
+==========================
+*/
+
+const basecamp = [
+
+{level:1,coins:10000,items:["200 Wood","500 Thread"],rewards:["1 Small Exp Scroll"]},
+{level:2,coins:20000,items:["500 Hide","250 Iron"],rewards:["1 Small Exp Scroll"]},
+{level:3,coins:30000,items:["250 Yarn","200 Barrel"],rewards:["1 Small Exp Scroll"]},
+{level:4,coins:40000,items:["200 Attack Potion","100 Waterskin"],rewards:["1 Small Exp Scroll"]},
+{level:5,coins:50000,items:["15 Gold Coin","1000 Thread"],rewards:["1 Small Exp Scroll"]},
+{level:6,coins:60000,items:["250 Strength Potion","100 Coin Purse"],rewards:["2 Small Exp Scroll"]},
+{level:7,coins:70000,items:["250 Perch","250 Raw Perch"],rewards:["2 Small Exp Scroll"]},
+{level:8,coins:80000,items:["100 Red Onion","100 Strawberry"],rewards:["2 Small Exp Scroll"]},
+{level:9,coins:90000,items:["200 Steel Bar","300 Wood"],rewards:["2 Small Exp Scroll"]},
+{level:10,coins:100000,items:["30 Gold Coin","300 Energy Potion"],rewards:["2 Small Exp Scroll"]},
+{level:11,coins:200000,items:["200 Super Defence Potion","100 Hammer"],rewards:["1 Medium Exp Scroll"]},
+{level:12,coins:300000,items:["500 Crab","500 Raw Crab"],rewards:["1 Medium Exp Scroll"]},
+{level:13,coins:400000,items:["250 Lemon","250 Red Onion"],rewards:["1 Medium Exp Scroll"]},
+{level:14,coins:500000,items:["500 Clownfish","500 Raw Clownfish"],rewards:["1 Medium Exp Scroll"]},
+{level:15,coins:1000000,items:["45 Gold Coin","2000 Yarn"],rewards:["1 Medium Exp Scroll"]},
+{level:16,coins:1500000,items:["500 Super Defence Potion","200 Raft"],rewards:["2 Medium Exp Scroll"]},
+{level:17,coins:2000000,items:["100 Diary","100 Notebook"],rewards:["2 Medium Exp Scroll"]},
+{level:18,coins:2500000,items:["100 Anchor","200 Fish Hook"],rewards:["2 Medium Exp Scroll"]},
+{level:19,coins:3000000,items:["200 Jellyfish","100 Super Forestry Potion"],rewards:["2 Medium Exp Scroll"]},
+{level:20,coins:5000000,items:["60 Gold Coin","500 Mithril Bar"],rewards:["2 Medium Exp Scroll"]},
+{level:21,coins:6000000,items:["500 Super Strength Potion","500 Super Defence Potion"],rewards:["1 Large Exp Scroll"]},
+{level:22,coins:7000000,items:["500 Pufferfish","500 Raw Pufferfish"],rewards:["1 Large Exp Scroll"]},
+{level:23,coins:8000000,items:["300 Extreme Energy Potion","250 Crate"],rewards:["1 Large Exp Scroll"]},
+{level:24,coins:9000000,items:["250 Workbench","1000 Rope"],rewards:["1 Large Exp Scroll"]},
+{level:25,coins:10000000,items:["75 Gold Coin","500 Dragon Leather"],rewards:["1 Large Exp Scroll"]},
+{level:26,coins:15000000,items:["750 Extreme Attack Potion","750 Extreme Defence Potion"],rewards:["2 Large Exp Scroll"]},
+{level:27,coins:20000000,items:["750 Extreme Defence Potion","200 Mithril Top"],rewards:["2 Large Exp Scroll"]},
+{level:28,coins:25000000,items:["500 Extreme Strength Potion","250 Mithril Axe"],rewards:["3 Large Exp Scroll"]},
+{level:29,coins:30000000,items:["500 Bestiary","250 Extreme Forestry Potion"],rewards:["4 Large Exp Scroll"]},
+{level:30,coins:100000000,items:["100 Gold Coin","500 Extreme Strength Potion"],rewards:["5 Large Exp Scroll"]},
+
+{level:31,coins:120000000,items:["5000 Blue Shrimp","5000 Blue Crab"],rewards:["6 Large Exp Scroll"]},
+{level:32,coins:140000000,items:["1000 Coin Purse"],rewards:["7 Large Exp Scroll"]},
+{level:33,coins:160000000,items:["2000 Extreme Energy Potion"],rewards:["8 Large Exp Scroll"]},
+{level:34,coins:180000000,items:["1000 Lightning Potion","1000 Dragon Rider Greaves"],rewards:["9 Large Exp Scroll"]},
+{level:35,coins:200000000,items:["10000 Blueberry","2500 Cedar Log"],rewards:["10 Large Exp Scroll"]},
+{level:36,coins:220000000,items:["5 Super Power Stone","5000 Elder Log"],rewards:["10 Queens Armour Fragment"]},
+{level:37,coins:240000000,items:["2000 Crystal Chest","2000 Crystal Key"],rewards:["10 Queens Armour Fragment"]},
+{level:38,coins:260000000,items:["25000 Blue Thread","5000 Redwood Log"],rewards:["10 Queens Armour Fragment"]},
+{level:39,coins:280000000,items:["500 Golden Necklace","2500 Fish Soup"],rewards:["10 Queens Armour Fragment"]},
+{level:40,coins:300000000,items:["150 Gold Coin","5000 Ember Fern"],rewards:["10 Queens Armour Fragment"]},
+
+{level:41,coins:350000000,items:["10000 Sunburst Flower","2500 Fish Steak"],rewards:["5 Queens Weapon Fragment"]},
+{level:42,coins:400000000,items:["500 Rock Skin Potion","3000 Bone Stew"],rewards:["10 Queens Weapon Fragment"]},
+{level:43,coins:450000000,items:["500 Liquid Death Potion","2500 Thieving Potion"],rewards:["15 Queens Weapon Fragment"]},
+{level:44,coins:500000000,items:["5000 Mahogany Log","5000 Cherry Blossom Log"],rewards:["20 Queens Weapon Fragment"]},
+{level:45,coins:550000000,items:["200 Gold Coin","10000 Coin Purse"],rewards:["25 Queens Weapon Fragment"]},
+
+{level:46,coins:600000000,items:["5000 Mushroom Soup","7500 Mahogany Log"],rewards:["2 Kings Weapon Fragment"]},
+{level:47,coins:650000000,items:["2500 Ultimate Power Potion","4000 Extreme Power Potion"],rewards:["5 Kings Weapon Fragment"]},
+{level:48,coins:700000000,items:["1000 Dragon Skull","1000 Dragon Tail"],rewards:["10 Kings Weapon Fragment"]},
+{level:49,coins:750000000,items:["10000 Coin Purse","10000 Crab Soup"],rewards:["25 Kings Weapon Fragment"]},
+{level:50,coins:1000000000,items:["2500 Invincibility Potion","2500 Golden Touch Potion"],rewards:["50 Kings Weapon Fragment"]},
+
+{level:51,coins:1100000000,items:["10000 Gold Coin","500 Ring Fragments"],rewards:["20 Challenge Coins"]},
+{level:52,coins:1200000000,items:["50 Necromancer Top","50 Necromancer Greaves"],rewards:["5 Enhancement Ticket"]},
+{level:53,coins:1300000000,items:["25 Mystic Robe","25 Mystic Bottoms"],rewards:["50 Soul Gem"]},
+{level:54,coins:1400000000,items:["10 Scythe of Demeter","10 Restoration Fragment 4"],rewards:["100 Casket of Treasure"]},
+{level:55,coins:1500000000,items:["25000 Gold Coin","5 Ancient Elven Book"],rewards:["20 Challenge Coins"]},
+
+{level:56,coins:1600000000,items:["2 Challenger Boots","2 Challenger Gloves"],rewards:["5 Enhancement Ticket"]},
+{level:57,coins:1700000000,items:["15 Drakes Diary","15000 Elven Grace Potion"],rewards:["1 Massive Exp Scroll"]},
+{level:58,coins:1800000000,items:["1000 Ring Fragments","50 Barbarian Top"],rewards:["100 Casket of Treasure"]},
+{level:59,coins:1900000000,items:["2 Challenger Hat","10000 Burnt Lobster"],rewards:["100 Elven Weapon Fragment"]},
+{level:60,coins:2000000000,items:["100000 Gold Coin","5 Eternal Ring"],rewards:["20 Challenge Coins"]},
+
+{level:61,coins:2000000000,items:["250 Large Exp Scroll","10 Necklace of Health"],rewards:["5 Enhancement Ticket"]},
+{level:62,coins:2000000000,items:["2 Challenger Legs","2 Challenger Top"],rewards:["50 Soul Gem"]},
+{level:63,coins:2000000000,items:["2000 Ring Fragments","25 Ring of Renewal"],rewards:["100 Elven Weapon Fragment"]},
+{level:64,coins:2000000000,items:["2 Primal Gloves","2 Primal Boots"],rewards:["1 Massive Exp Scroll"]},
+{level:65,coins:2000000000,items:["500000 Gold Coin","5 Chefs Hat"],rewards:["250 Casket of Treasure"]},
+
+{level:66,coins:2000000000,items:["2 Primal Legs","2 Primal Top"],rewards:["500 Elven Armour Fragment"]},
+{level:67,coins:2000000000,items:["20 Ring of Life","20 Ring of Death"],rewards:["100 Elven Weapon Fragment"]},
+{level:68,coins:2000000000,items:["2500 Ring Fragments","5 Wooden Stick"],rewards:["50 Soul Gem"]},
+{level:69,coins:2000000000,items:["5 Blessed Eternal Sacrifice","50 Goblin Cleaver"],rewards:["5 Massive Exp Scroll"]},
+{level:70,coins:2000000000,items:["1000000 Gold Coin","2 Cognium Ring"],rewards:["250 Casket of Treasure"]},
+
+{level:71,coins:2000000000,items:["1 Necklace of Amaran","1 Mystic Staff (E)"],rewards:["500 Elven Weapon Fragment"]},
+{level:72,coins:2000000000,items:["10 Hatchet of the Gods","25 Rabbits Foot"],rewards:["100 Soul Gem"]},
+{level:73,coins:2000000000,items:["25000 Burnt Shrimp","25000 Burnt Snail"],rewards:["5 Massive Exp Scroll"]},
+{level:74,coins:2000000000,items:["5000 Ring Fragments","1 Ring of Souls (E)"],rewards:["1000 Casket of Treasure"]},
+{level:75,coins:2000000000,items:["5000000 Gold Coin","10 Eternal Berserker Ring"],rewards:["5000 Casket of Treasure"]}
+
+];
+
+
+/*
+==========================
+TREASURE FULL LIST
+==========================
+*/
+
+const treasure = [
+
+["A bustling waterway amidst stone and steel, where the flow never sleeps.","Fishing","City River"],
+["A great place to find a Ferris Wheel, or an Arcade.","Fishing","Beach Pier"],
+["A hidden paradise among trees, where the waters reflect the canopy above.","Fishing","The Grove"],
+["A peaceful place filled with birds chirping","Fishing","Woodland Lake"],
+["As strong as they come, very reliable","Forestry","Oak Tree"],
+["Can't beat a good old Bacon Butty!","Combat","Pig"],
+["Can't touch this","Alchemy","Invincibility Potion"],
+["Contains information about things","Crafting","Bestiary"],
+["Despite the name, I would not recommend giving this guy a cuddle.","Combat","Fluffy"],
+["Did I get this one right? It is blue, right?","Combat","Baby Blue Dragon"],
+["Do these even work?","Alchemy","Luck Potion"],
+["Do we really know more about space?","Fishing","Open Ocean"],
+["Don't hit me on the head","Crafting","Nails"],
+["Don't touch the but!","Cooking","Clownfish"],
+["Evergreen Tree, often red in colour","Forestry","Cedar Tree"],
+["Fair enough, I'm partially colourblind","Combat","Green Dragon"],
+["For Cognium!","Combat","Crocodile"],
+["Give a man a fish","Crafting","Fishing Net"],
+["He can help me practice my bow skills","Combat","Elven Archer"],
+["How did I even catch this?","Cooking","Octopus"],
+["How on earth did a trolley get in there?","Fishing","Small Pond"],
+["How on earth does this not make me rich","Mining","Gold Ore"],
+["I am the King of the greatly feared creatures","Combat","King Dragon"],
+["I am the Queen of a newly discovered realm","Combat","Elven Queen"],
+["I come in many types, King is my most well known","Combat","Cobra"],
+["I could make some syrup","Forestry","Maple Tree"],
+["I feel harsh pickpocketing him","Thieving","Bard"],
+["I lead an ancient forgotten tribe","Combat","Ancient Tribal Leader"],
+["I prefer nice dreams","Combat","Nightmare"],
+["I shall rise from the ashes","Combat","Phoenix"],
+["I'm sorry, but I'm on Team Egg","Combat","Chicken"],
+["If I get caught","Thieving","Taskmaster"],
+["It's not real","Mining","Dragon Ore"],
+["Karen, activate insta kill!","Alchemy","Liquid Death Potion"],
+["Now I know how Midas felt","Alchemy","Golden Touch Potion"],
+["Poor Cow","Crafting","Leather"],
+["Some people say I'm your best friend","Mining","Diamond"],
+["This tree is a living fossil","Forestry","Ginkgo Tree"],
+["Up in the clouds.","Discovery","Rocky Peaks"],
+["Wana bet?","Discovery","Lake Wana"],
+["Wood!","Combat","Training Dummy"],
+["Wouldn't these be like, really heavy?","Crafting","Iron Boots"],
+["Yeah no thanks, I don't like the dark.","Fishing","Cave"],
+["You may need to wrap up warm","Discovery","Frozen Wasteland"]
+
+];
+
+
+/*
+CALCULATOR
+*/
+
+function calculate(){
+
+let current=parseInt(currentLevel.value);
+let target=parseInt(targetLevel.value);
+
+let coins=0;
+let items={};
+let rewards={};
+
+let html="<table><tr><th>Level</th><th>Coins</th><th>Items</th></tr>";
+
+basecamp.forEach(l=>{
+
+if(l.level>current && l.level<=target){
+
+coins+=l.coins;
+
+l.items.forEach(i=>{
+let [qty,name]=i.split(" ");
+qty=parseInt(qty);
+items[name]=(items[name]||0)+qty;
+});
+
+l.rewards.forEach(r=>{
+let [qty,name]=r.split(" ");
+qty=parseInt(qty);
+rewards[name]=(rewards[name]||0)+qty;
+});
+
+html+=`<tr><td>${l.level}</td><td>${l.coins.toLocaleString()}</td><td>${l.items.join(", ")}</td></tr>`;
+
+}
+
+});
+
+html+="</table>";
+
+html+=`<h3>Total Coins: ${coins.toLocaleString()}</h3>`;
+
+html+="<h3>Items Needed:</h3>";
+for(let i in items) html+=i+": "+items[i]+"<br>";
+
+html+="<h3>Rewards:</h3>";
+for(let r in rewards) html+=r+": "+rewards[r]+"<br>";
+
+output.innerHTML=html;
+
+}
+
+
+/*
+TREASURE SEARCH
+*/
+
+function searchTreasure(){
+
+let text=searchBox.value.toLowerCase();
+
+let html="<table><tr><th>Clue</th><th>Skill</th><th>Task</th></tr>";
+
+treasure.forEach(t=>{
+
+if(t[0].toLowerCase().includes(text)){
+
+html+=`<tr><td>${t[0]}</td><td>${t[1]}</td><td>${t[2]}</td></tr>`;
+
+}
+
+});
+
+html+="</table>";
+
+treasureOutput.innerHTML=html;
+
+}
+
+searchTreasure();
+
+
+function switchTab(id,el){
+
+document.getElementById("basecamp").style.display="none";
+document.getElementById("treasure").style.display="none";
+
+document.getElementById(id).style.display="block";
+
+document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+el.classList.add("active");
+
+}
+
+</script>
+
+</body>
+</html>
